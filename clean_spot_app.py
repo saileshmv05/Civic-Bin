@@ -983,6 +983,24 @@ def civic_badge(score):
         return "Newcomer"
 
 
+def get_seconds_since_last_submission(username):
+    """
+    Returns seconds since this account's most recent review, or None if
+    they've never submitted one. Backs the anti-spam cooldown - reading
+    MAX(timestamp) instead of a separate counter keeps this in sync with
+    the reviews table automatically, no extra bookkeeping table needed.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT MAX(timestamp) FROM garbage_reports WHERE username = ?", (username,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row or not row[0]:
+        return None
+    last_dt = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
+    return (datetime.now() - last_dt).total_seconds()
+
+
 def haversine_distance_m(lat1, lon1, lat2, lon2):
     """Great-circle distance between two points, in meters."""
     from math import radians, sin, cos, sqrt, atan2
