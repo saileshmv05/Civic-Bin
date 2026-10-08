@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body, #map-wrap { height: 100%; margin: 0; padding: 0; }
+  #map-wrap { position: relative; min-height: 550px; }
+  #map { position: absolute; inset: 0; }
+  #draw-controls {
+    position: absolute; top: 10px; right: 10px; z-index: 5;
+    display: flex; gap: 6px;
+  }
+  #draw-controls button {
+    font-family: sans-serif; font-size: 13px; padding: 6px 10px;
+    border-radius: 6px; border: 1px solid #999; cursor: pointer;
+    background: #fff; color: #222;
+  }
+  #draw-controls button.active { background: #e23636; color: #fff; border-color: #e23636; }
+  #draw-hint {
+    position: absolute; top: 46px; right: 10px; z-index: 5;
+    background: rgba(0,0,0,0.75); color: #fff; font-family: sans-serif;
+    font-size: 12px; padding: 4px 8px; border-radius: 6px; display: none;
+  }
+</style>
+</head>
+<body>
+<div id="map-wrap">
+  <div id="map"></div>
+  <div id="draw-controls"></div>
+  <div id="draw-hint">Click points along the stretch, then hit Finish.</div>
+</div>
+<script>
+  // --------------------------------------------------------------------
+  // Minimal vanilla-JS bridge to Streamlit's component wire protocol.
+  // No npm/React build needed - this is just a handful of postMessage
+  // calls matching what Streamlit's main frontend expects from ANY
+  // component iframe.
+  // --------------------------------------------------------------------
+  function sendToStreamlit(type, payload) {
+    window.parent.postMessage(Object.assign({ isStreamlitMessage: true, type: type }, payload), "*");
+  }
+  function setComponentValue(value) {
+    sendToStreamlit("streamlit:setComponentValue", { value: value });
+  }
+  function setFrameHeight(height) {
+    sendToStreamlit("streamlit:setFrameHeight", { height: height });
+  }
+
+  let mapInstance = null;
+  let overlaysOnMap = [];
+
+  // --- Manual segment-drawing state ---
+  // google.maps.drawing.DrawingManager was REMOVED from the Maps
+  // JavaScript API (Google's own deprecation notice, hit live while
+  // testing) - so "draw a road segment" is built by hand here: a toggle
+  // button puts us in drawing mode, each map click appends a point to a
+  // scratch polyline, and a Finish button reports the finished path back
+  // to Python. No deprecated library involved.
+  let isDrawingSegment = false;
+  let segmentPoints = [];
+  let scratchPolyline = null;
+
+  function ratingColor(rating) {
+    if (rating <= 2) return "#e53935";
+    if (rating === 3) return "#fb8c00";
+    return "#43a047";
+  }
+
+  function clearOverlays() {
+    overlaysOnMap.forEach((o) => o.setMap(null));
+    overlaysOnMap = [];
+  }
+
+  function renderReviews(args) {
+    clearOverlays();
+    const reviews = args.reviews || [];
+
+    if (args.show_heatmap) {
+      // google.maps.visualization.HeatmapLayer was ALSO removed from the
+      // Maps JavaScript API - replaced here with translucent circles.
+      // Colored by STATUS (red = still open/unfixed, green = fixed) per
+      // the actual ask - severity still affects circle size/opacity for
+      // open reports, so worse unfixed spots glow more intensely, but
+      // the color itself always signals "still a problem" vs "solved."
+      reviews.forEach((r) => {
+        const isFixed = r.status === "Fixed";
+        const weight = 6 - r.rating; // 1 (good) .. 5 (severe) - only meaningful while open
+        const circle = new google.maps.Circle({
+          strokeWeight: 0,
+          fillColor: isFixed ? "#43a047" : "#e23636",
+          fillOpacity: isFixed ? 0.35 : Math.min(0.15 + weight * 0.11, 0.75),
+          map: mapInstance,
+          center: { lat: r.lat, lng: r.lon },
+          radius: isFixed ? 220 : 250 + weight * 200,
+        });
+        overlaysOnMap.push(circle);
+      });
+      return;
+    }
+
+    reviews.forEach((r) => {
+      const color = ratingColor(r.rating);
+      const infoHtml =
+        "<b>" + r.location_name + "</b><br>" +
+        "Category: " + r.category + "<br>" +
+        "Rating: " + r.rating + " / 5<br>" +
+        "Status: " + (r.status === "Fixed" ? "Cleaned" : "Open") + "<br>" +
+        "Reported by: " + r.username + "<br>" +
+        "Upvotes: " + r.upvote_count + "<br>" +
+        (r.description || "");
+      const infoWindow = new google.maps.InfoWindow({ content: infoHtml });
+
+      if (r.path_coords) {
+        const path = r.path_coords.map((p) => ({ lat: p[0], lng: p[1] }));
+        const line = new google.maps.Polyline({
+          path: path, strokeColor: color, strokeWeight: 6, strokeOpacity: 0.85, map: mapInstance,
+        });
+        line.addListener("click", (e) => infoWindow.open({ map: mapInstance, anchor: line, position: e.latLng }));
+        overlaysOnMap.push(line);
+      } else {
+        const marker = new google.maps.Marker({
+          position: { lat: r.lat, lng: r.lon }, map: mapInstance, title: r.location_name,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE, scale: 9,
+            fillColor: color, fillOpacity: 1, strokeColor: "#222", strokeWeight: 1,
+          },
+        });
+        marker.addListener("click", () => infoWindow.open({ map: mapInstance, anchor: marker }));
+        overlaysOnMap.push(marker);
+      }
+    });
+  }
+
+  function setDrawingMode(on) {
+    isDrawingSegment = on;
+    const toggleBtn = document.getElementById("toggle-draw-btn");
+    const finishBtn = document.getElementById("finish-draw-btn");
+    const hint = document.getElementById("draw-hint");
+
+    if (on) {
+      segmentPoints = [];
+      if (scratchPolyline) scratchPolyline.setMap(null);
+      scratchPolyline = new google.maps.Polyline({
+        path: [], strokeColor: "#3388ff", strokeWeight: 5, map: mapInstance,
+      });
+      toggleBtn.classList.add("active");
+      toggleBtn.textContent = "Cancel";
+      finishBtn.style.display = "inline-block";
+      hint.style.display = "block";
+    } else {
+      if (scratchPolyline) { scratchPolyline.setMap(null); scratchPolyline = null; }
+      toggleBtn.classList.remove("active");
+      toggleBtn.textContent = "Draw Segment";
+      finishBtn.style.display = "none";
+      hint.style.display = "none";
+      segmentPoints = [];
+    }
+  }
+
+  function buildDrawControls() {
+    const container = document.getElementById("draw-controls");
+    container.innerHTML = "";
+
+    const toggleBtn = document.createElement("button");
+    toggleBtn.id = "toggle-draw-btn";
+    toggleBtn.textContent = "Draw Segment";
+    toggleBtn.onclick = () => setDrawingMode(!isDrawingSegment);
+    container.appendChild(toggleBtn);
+
+    const finishBtn = document.createElement("button");
+    finishBtn.id = "finish-draw-btn";
+    finishBtn.textContent = "Finish";
+    finishBtn.style.display = "none";
+    finishBtn.onclick = () => {
+      if (segmentPoints.length >= 2) {
+        setComponentValue({ type: "drawing", path: segmentPoints });
+      }
+      setDrawingMode(false);
+    };
+    container.appendChild(finishBtn);
+  }
+
+  function initMap(args) {
+    mapInstance = new google.maps.Map(document.getElementById("map"), {
+      center: args.center, zoom: args.zoom, streetViewControl: false, mapTypeControl: false,
+    });
+
+    if (args.enable_picker) {
+      buildDrawControls();
+
+      mapInstance.addListener("click", (e) => {
+        if (isDrawingSegment) {
+          const point = [e.latLng.lat(), e.latLng.lng()];
+          segmentPoints.push(point);
+          scratchPolyline.setPath(segmentPoints.map((p) => ({ lat: p[0], lng: p[1] })));
+        } else {
+          setComponentValue({ type: "click", lat: e.latLng.lat(), lng: e.latLng.lng() });
+        }
+      });
+    }
+
+    renderReviews(args);
+  }
+
+  // Tracks the <script> tag's own load state, separately from
+  // window.google.maps - closes a race where two "streamlit:render"
+  // messages arriving before the FIRST script tag finishes loading would
+  // each see window.google as still undefined and inject a second
+  // <script> tag, causing "already defined" custom-element errors.
+  let mapsScriptState = "unloaded"; // "unloaded" | "loading" | "loaded"
+  let pendingCallbacks = [];
+
+  function loadGoogleMapsScript(apiKey, callback) {
+    if (mapsScriptState === "loaded") { callback(); return; }
+    pendingCallbacks.push(callback);
+    if (mapsScriptState === "loading") return;
+
+    mapsScriptState = "loading";
+    const script = document.createElement("script");
+    script.async = true;
+    // No extra libraries needed - Drawing/Visualization (both deprecated)
+    // are replaced above with plain core-API Polyline/Circle overlays.
+    // loading=async silences Google's own "loaded directly without
+    // loading=async" console warning - purely a loading-pattern nit,
+    // doesn't change behavior since we already gate on script.onload.
+    script.src = "https://maps.googleapis.com/maps/api/js?key=" + apiKey + "&loading=async";
+    script.onload = () => {
+      mapsScriptState = "loaded";
+      pendingCallbacks.forEach((cb) => cb());
+      pendingCallbacks = [];
+    };
+    script.onerror = () => {
+      mapsScriptState = "unloaded";
+      document.getElementById("map").innerText =
+        "Failed to load Google Maps - check that your API key and billing are set up correctly.";
+    };
+    document.head.appendChild(script);
+  }
+
+  window.addEventListener("message", (event) => {
+    const data = event.data;
+    if (!data || data.type !== "streamlit:render") return;
+    const args = data.args;
+
+    if (!args.api_key) {
+      document.getElementById("map").innerText = "Missing Google Maps API key - set GOOGLE_MAPS_API_KEY and restart.";
+      setFrameHeight(560);
+      return;
+    }
+
+    if (!mapInstance) {
+      loadGoogleMapsScript(args.api_key, () => initMap(args));
+    } else {
+      mapInstance.setCenter(args.center);
+      mapInstance.setZoom(args.zoom);
+      renderReviews(args);
+    }
+    setFrameHeight(560);
+  });
+
+  // Tell Streamlit we're ready - this triggers the first "streamlit:render".
+  sendToStreamlit("streamlit:componentReady", { apiVersion: 1 });
+  setFrameHeight(560);
+</script>
+</body>
+</html>
