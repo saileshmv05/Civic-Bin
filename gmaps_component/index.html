@@ -200,6 +200,22 @@
     }
 
     renderReviews(args);
+
+    // Google Maps sizes itself once, on creation. If the container was still
+    // laying out at that moment, the map stays blank until something resizes
+    // the page. Watch the container and tell Maps to redraw whenever it changes.
+    const wrap = document.getElementById("map-wrap");
+    if (window.ResizeObserver && wrap) {
+      new ResizeObserver(() => {
+        if (mapInstance) google.maps.event.trigger(mapInstance, "resize");
+      }).observe(wrap);
+    }
+    setTimeout(() => {
+      if (mapInstance) {
+        google.maps.event.trigger(mapInstance, "resize");
+        mapInstance.setCenter(args.center);
+      }
+    }, 300);
   }
 
   // Tracks the <script> tag's own load state, separately from
@@ -254,6 +270,7 @@
       mapInstance.setCenter(args.center);
       mapInstance.setZoom(args.zoom);
       renderReviews(args);
+      google.maps.event.trigger(mapInstance, "resize");
     }
     setFrameHeight(560);
   });
