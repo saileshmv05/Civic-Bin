@@ -1588,7 +1588,7 @@ elif st.session_state.clicked_lat is not None:
 else:
     st.sidebar.caption("Nothing selected - click the map, or use a tool below.")
 
-with st.sidebar.expander("Web-sling my location / search"):
+with st.sidebar.expander("Use my location or search"):
     geo_result = geo_component(key="geo_button", default=None)
     if geo_result and geo_result != st.session_state._last_geo_raw:
         st.session_state._last_geo_raw = geo_result
