@@ -1325,7 +1325,9 @@ def safe_image(path, **kwargs):
 SEVERITY_TO_RATING = {"Mild": 3, "Severe": 2, "Critical": 1}
 
 
-GEMINI_VISION_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"]
+# gemini-2.0-flash was shut down June 1, 2026; gemini-2.5-flash is returning 404 for many keys.
+# Newest Flash model first, then the older one as a backup.
+GEMINI_VISION_MODELS = ["gemini-3.5-flash", "gemini-2.5-flash"]
 
 
 def analyze_garbage_photo(image_bytes, mime_type="image/jpeg"):
@@ -1386,7 +1388,8 @@ def analyze_garbage_photo(image_bytes, mime_type="image/jpeg"):
                     raw_text = raw_text[4:]
             return json.loads(raw_text.strip()), None
         except urllib.error.HTTPError as exc:
-            errors.append(f"{model_name}: HTTP {exc.code}")
+            detail = exc.read().decode("utf-8", "ignore")[:200]
+            errors.append(f"{model_name}: HTTP {exc.code} {detail}")
         except Exception as exc:  # noqa: BLE001 - try the next model, report all failures
             errors.append(f"{model_name}: {exc}")
     return None, "Photo analysis failed: " + " | ".join(errors)
