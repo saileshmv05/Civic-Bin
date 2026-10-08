@@ -1325,6 +1325,13 @@ def safe_image(path, **kwargs):
 
 SEVERITY_TO_RATING = {"Mild": 3, "Severe": 2, "Critical": 1}
 
+# Groq vision models, tried in order. If one is renamed or retired, the next is used.
+# Check the current list at https://console.groq.com/docs/vision
+VISION_MODELS = [
+    "meta-llama/llama-4-scout-17b-16e-instruct",
+    "meta-llama/llama-4-maverick-17b-128e-instruct",
+]
+
 
 def analyze_garbage_photo(image_bytes, mime_type="image/jpeg"):
     """
@@ -1365,22 +1372,24 @@ def analyze_garbage_photo(image_bytes, mime_type="image/jpeg"):
 
         client = Groq(api_key=api_key)
         b64_image = base64.b64encode(image_bytes).decode("utf-8")
-        response = client.chat.completions.create(
-            model="qwen/qwen3.6-27b",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": f"data:{mime_type};base64,{b64_image}"},
-                        },
-                    ],
-                }
-            ],
-            response_format={"type": "json_object"},
-        )
+        content = [
+            {"type": "text", "text": prompt},
+            {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{b64_image}"}},
+        ]
+        response = None
+        errors = []
+        for model_name in VISION_MODELS:
+            try:
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=[{"role": "user", "content": content}],
+                    response_format={"type": "json_object"},
+                )
+                break
+            except Exception as model_exc:  # noqa: BLE001 - fall through to the next model
+                errors.append(f"{model_name}: {model_exc}")
+        if response is None:
+            raise RuntimeError(" | ".join(errors))
         raw_text = response.choices[0].message.content.strip()
         if raw_text.startswith("```"):
             raw_text = raw_text.strip("`")
