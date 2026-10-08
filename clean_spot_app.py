@@ -549,7 +549,6 @@ def render_splash_screen():
                 <div class="splash-ring ring1"></div>
                 <div class="splash-ring ring2"></div>
                 <div class="splash-ring ring3"></div>
-                
             </div>
             <div class="splash-title">CLEAN<span>SPOT</span></div>
             <div class="splash-sub">Community Cleanup and Reporting</div>
