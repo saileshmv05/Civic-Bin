@@ -1324,36 +1324,27 @@ def safe_image(path, **kwargs):
 
 SEVERITY_TO_RATING = {"Mild": 3, "Severe": 2, "Critical": 1}
 
-# Groq vision models, tried in order. If one is renamed or retired, the next is used.
-# Check the current list at https://console.groq.com/docs/vision
-VISION_MODELS = [
-    "meta-llama/llama-4-scout-17b-16e-instruct",
-    "meta-llama/llama-4-maverick-17b-128e-instruct",
-]
+
+GEMINI_VISION_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"]
 
 
 def analyze_garbage_photo(image_bytes, mime_type="image/jpeg"):
     """
-    Sends an uploaded or live-captured photo to Qwen 3.6 27B (an open-weight,
-    Apache-2.0 vision-language model, served fast via Groq) to (a) verify it
-    actually shows garbage or illegal dumping - not a meme, a selfie, an unrelated
-    object, etc. - and (b) classify the category and severity if it does. Returns
-    (result_dict, error_message) - exactly one is None. Reuses GROQ_API_KEY.
+    Checks an uploaded or live-captured photo with Google Gemini. It verifies the
+    photo shows garbage, suggests a category and severity, and flags possible
+    AI-generated images. Returns (result_dict, error_message); exactly one is None.
     """
-    try:
-        from groq import Groq
-    except ImportError:
-        return None, "Install the 'groq' package to enable photo verification (pip install groq)."
+    import base64
 
-    api_key = os.environ.get("GROQ_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        return None, "Set the GROQ_API_KEY environment variable to enable photo verification."
+        return None, "Set the GEMINI_API_KEY environment variable to enable photo verification."
 
     category_list = ", ".join(f'"{c}"' for c in CATEGORIES)
     prompt = (
         "You are verifying a citizen-submitted photo for a civic garbage and waste reporting platform, "
         "to filter out irrelevant, joke, or unrelated images. Look at this photo and respond with "
-        "ONLY a JSON object, no other text, no markdown fences, in exactly this shape: "
+        "ONLY a JSON object, no other text, in exactly this shape: "
         '{"is_garbage_issue": true or false, '
         f'"category": one of [{category_list}] or null if is_garbage_issue is false, '
         '"severity": one of ["Mild","Severe","Critical"] or null if is_garbage_issue is false. '
@@ -1361,43 +1352,44 @@ def analyze_garbage_photo(image_bytes, mime_type="image/jpeg"):
         "smells or attracts pests; Critical = hazardous, medical, chemical, or sharp waste, or a "
         "large dump blocking a road. "
         '"looks_ai_generated": true or false - your best-effort guess at whether this image is '
-        "AI-generated or synthetic rather than a real photograph (look for telltale artifacts, "
-        "unnatural textures, or impossible details), "
+        "AI-generated or synthetic rather than a real photograph, "
         '"explanation": a short one-sentence reason for your verdict}.'
     )
 
-    try:
-        import base64
+    b64_image = base64.b64encode(image_bytes).decode("utf-8")
+    body = json.dumps({
+        "contents": [{
+            "parts": [
+                {"text": prompt},
+                {"inline_data": {"mime_type": mime_type, "data": b64_image}},
+            ]
+        }],
+        "generationConfig": {"responseMimeType": "application/json"},
+    }).encode("utf-8")
 
-        client = Groq(api_key=api_key)
-        b64_image = base64.b64encode(image_bytes).decode("utf-8")
-        content = [
-            {"type": "text", "text": prompt},
-            {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{b64_image}"}},
-        ]
-        response = None
-        errors = []
-        for model_name in VISION_MODELS:
-            try:
-                response = client.chat.completions.create(
-                    model=model_name,
-                    messages=[{"role": "user", "content": content}],
-                    response_format={"type": "json_object"},
-                )
-                break
-            except Exception as model_exc:  # noqa: BLE001 - fall through to the next model
-                errors.append(f"{model_name}: {model_exc}")
-        if response is None:
-            raise RuntimeError(" | ".join(errors))
-        raw_text = response.choices[0].message.content.strip()
-        if raw_text.startswith("```"):
-            raw_text = raw_text.strip("`")
-            if raw_text.lower().startswith("json"):
-                raw_text = raw_text[4:]
-        data = json.loads(raw_text.strip())
-        return data, None
-    except Exception as exc:  # noqa: BLE001 - surface any API/parsing failure to the UI
-        return None, f"Photo analysis failed: {exc}"
+    errors = []
+    for model_name in GEMINI_VISION_MODELS:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+        request = urllib.request.Request(
+            url,
+            data=body,
+            method="POST",
+            headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            raw_text = payload["candidates"][0]["content"]["parts"][0]["text"].strip()
+            if raw_text.startswith("```"):
+                raw_text = raw_text.strip("`")
+                if raw_text.lower().startswith("json"):
+                    raw_text = raw_text[4:]
+            return json.loads(raw_text.strip()), None
+        except urllib.error.HTTPError as exc:
+            errors.append(f"{model_name}: HTTP {exc.code}")
+        except Exception as exc:  # noqa: BLE001 - try the next model, report all failures
+            errors.append(f"{model_name}: {exc}")
+    return None, "Photo analysis failed: " + " | ".join(errors)
 
 
 def polish_complaint_with_ai(details_text, category, rating, location_name):
