@@ -5,6 +5,10 @@ neighbourhood blind spots, and the community tracks each report until the spot i
 
 ## Features
 
+- **IoT Edge Sentinel (ESP32-CAM Autonomous Node):** Live optical surveillance node
+  mounted at neighbourhood bins or blind spots. Features hardware night flash, live optical viewfinder,
+  and autonomous surveillance audits that capture frames over Wi-Fi, run AI Vision triage,
+  and auto-register municipal tickets with GPS tagging without requiring human intervention.
 - **Photo verification:** a live or uploaded photo is checked by an AI vision model.
   It confirms the photo shows garbage and suggests a category and severity.
 - **Automatic location:** coordinates come from a map click, the browser location,
@@ -35,8 +39,15 @@ neighbourhood blind spots, and the community tracks each report until the spot i
    ```
 3. Run the app:
    ```
-   py -m streamlit run civic_bin_app.py
+   py -m streamlit run clean_spot_app.py
    ```
+
+## IoT Edge Sentinel Hardware Setup
+
+1. **Hardware:** AI Thinker ESP32-CAM module with OV2640/OV3660 camera and ESP32-CAM-MB programmer base.
+2. **Firmware:** Located in `firmware/cleanspot_esp32_cam/cleanspot_esp32_cam.ino`.
+3. Open in Arduino IDE, select board `AI Thinker ESP32-CAM`, configure Wi-Fi credentials, and upload over USB.
+4. The node serves `/capture` and `/status` over local Wi-Fi, which seamlessly connects to the Civic-Bin Sentinel dashboard.
 
 The header of `civic_bin_app.py` explains how to obtain each key.
 

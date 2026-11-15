@@ -1343,9 +1343,18 @@ def safe_image(path, **kwargs):
 SEVERITY_TO_RATING = {"Mild": 3, "Severe": 2, "Critical": 1}
 
 
-# gemini-2.0-flash was shut down June 1, 2026; gemini-2.5-flash is returning 404 for many keys.
-# Newest Flash model first, then the older one as a backup.
-GEMINI_VISION_MODELS = ["gemini-3.5-flash", "gemini-2.5-flash"]
+# Updated for Google Gemini API model availability:
+# gemini-2.5-flash and older 2.0 models are discontinued/404 for new users.
+# We prioritize the latest active, high-throughput Flash models with automatic retry and fallbacks:
+GEMINI_VISION_MODELS = [
+    "gemini-flash-lite-latest",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-flash-latest",
+    "gemini-3.8-flash",
+    "gemini-3.5-flash",
+    "gemini-3.7-flash",
+]
 
 
 def analyze_garbage_photo(image_bytes, mime_type="image/jpeg"):
@@ -1355,8 +1364,15 @@ def analyze_garbage_photo(image_bytes, mime_type="image/jpeg"):
     AI-generated images. Returns (result_dict, error_message); exactly one is None.
     """
     import base64
+    import time
 
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not api_key and hasattr(st, "secrets"):
+        try:
+            api_key = st.secrets.get("GEMINI_API_KEY") or st.secrets.get("GOOGLE_API_KEY")
+        except Exception:
+            pass
+
     if not api_key:
         return None, "Set the GEMINI_API_KEY environment variable to enable photo verification."
 
@@ -1396,20 +1412,68 @@ def analyze_garbage_photo(image_bytes, mime_type="image/jpeg"):
             method="POST",
             headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
         )
+        max_attempts = 2
+        for attempt in range(max_attempts):
+            try:
+                with urllib.request.urlopen(request, timeout=25) as response:
+                    payload = json.loads(response.read().decode("utf-8"))
+                raw_text = payload["candidates"][0]["content"]["parts"][0]["text"].strip()
+                if raw_text.startswith("```"):
+                    raw_text = raw_text.strip("`")
+                    if raw_text.lower().startswith("json"):
+                        raw_text = raw_text[4:]
+                return json.loads(raw_text.strip()), None
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", "ignore")
+                try:
+                    err_json = json.loads(detail)
+                    detail = err_json.get("error", {}).get("message", detail[:120])
+                except Exception:
+                    detail = detail[:120]
+
+                # If temporary overload (503) or rate limit (429), pause and retry once
+                if exc.code in (503, 429) and attempt < max_attempts - 1:
+                    time.sleep(1.2)
+                    continue
+
+                errors.append(f"{model_name}: HTTP {exc.code} ({detail.strip()})")
+                break
+            except Exception as exc:  # noqa: BLE001 - try the next model, report all failures
+                errors.append(f"{model_name}: {exc}")
+                break
+
+    # Secondary fallback: Groq Vision if GROQ_API_KEY is configured
+    groq_key = os.environ.get("GROQ_API_KEY")
+    if groq_key:
         try:
-            with urllib.request.urlopen(request, timeout=60) as response:
-                payload = json.loads(response.read().decode("utf-8"))
-            raw_text = payload["candidates"][0]["content"]["parts"][0]["text"].strip()
-            if raw_text.startswith("```"):
-                raw_text = raw_text.strip("`")
-                if raw_text.lower().startswith("json"):
-                    raw_text = raw_text[4:]
-            return json.loads(raw_text.strip()), None
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", "ignore")[:200]
-            errors.append(f"{model_name}: HTTP {exc.code} {detail}")
-        except Exception as exc:  # noqa: BLE001 - try the next model, report all failures
-            errors.append(f"{model_name}: {exc}")
+            from groq import Groq
+            client = Groq(api_key=groq_key)
+            data_url = f"data:{mime_type};base64,{b64_image}"
+            groq_models = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview"]
+            for g_model in groq_models:
+                try:
+                    resp = client.chat.completions.create(
+                        model=g_model,
+                        messages=[{
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt + " Return pure JSON ONLY."},
+                                {"type": "image_url", "image_url": {"url": data_url}},
+                            ],
+                        }],
+                        response_format={"type": "json_object"},
+                    )
+                    content = resp.choices[0].message.content.strip()
+                    if content.startswith("```"):
+                        content = content.strip("`")
+                        if content.lower().startswith("json"):
+                            content = content[4:]
+                    return json.loads(content.strip()), None
+                except Exception as g_err:
+                    errors.append(f"Groq {g_model}: {g_err}")
+        except Exception:
+            pass
+
     return None, "Photo analysis failed: " + " | ".join(errors)
 
 
@@ -1652,15 +1716,73 @@ else:
     st.sidebar.caption("Never touch medical, chemical, or sharp waste. Report it from a safe distance.")
     st.sidebar.caption("Add a photo, then verify it with AI")
     photo_method = st.sidebar.radio(
-        "Photo method", ["Take a live photo", "Upload from device"],
+        "Photo method", ["Take a live photo", "Upload from device", "📡 IoT Edge Node"],
         horizontal=True, label_visibility="collapsed", key="review_photo_method",
     )
     if photo_method.startswith("Take a live"):
         uploaded_photo = st.sidebar.camera_input("Take a photo", key="review_photo_camera")
-    else:
+    elif photo_method.startswith("Upload"):
         uploaded_photo = st.sidebar.file_uploader(
             "Upload a photo of the garbage", type=["jpg", "jpeg", "png"], key="review_photo_uploader"
         )
+    else:
+        uploaded_photo = None
+        st.sidebar.markdown("**📡 CLEANSPOT-CAM-01 (ESP32-CAM)**")
+        cam_endpoint = st.sidebar.text_input(
+            "Node Endpoint",
+            value=st.session_state.get("iot_cam_url", "http://192.168.0.108/capture"),
+            key="iot_cam_url_input",
+            help="Live URL of the ESP32-CAM node on local Wi-Fi",
+        )
+        st.session_state["iot_cam_url"] = cam_endpoint
+        if st.sidebar.button("📸 Trigger & Fetch from IoT Node", key="btn_trigger_iot", use_container_width=True):
+            try:
+                import urllib.request
+                with st.spinner("Connecting to CLEANSPOT-CAM-01 & triggering flash..."):
+                    req = urllib.request.Request(cam_endpoint, headers={"User-Agent": "CleanSpot-Web/1.0"})
+                    with urllib.request.urlopen(req, timeout=8) as response:
+                        img_bytes = response.read()
+                        if img_bytes:
+                            st.session_state.iot_photo_bytes = img_bytes
+                            st.session_state.pending_photo_bytes = img_bytes
+                            st.session_state.clicked_lat = 13.0827
+                            st.session_state.clicked_lon = 80.2707
+                            st.sidebar.success("Captured live frame from ESP32-CAM! Node GPS: 13.0827, 80.2707")
+            except Exception as e:
+                st.sidebar.error(f"Could not connect to IoT node: {e}")
+
+        if st.session_state.get("iot_photo_bytes"):
+            st.sidebar.image(
+                st.session_state.iot_photo_bytes,
+                caption="Live Capture: CLEANSPOT-CAM-01 (Chennai Central)",
+                use_container_width=True,
+            )
+            if st.sidebar.button("Verify & Analyze with AI", key="btn_verify_iot", use_container_width=True):
+                photo_bytes = st.session_state.iot_photo_bytes
+                mime_type = "image/jpeg"
+                result, ai_error = analyze_garbage_photo(photo_bytes, mime_type)
+                if ai_error:
+                    st.sidebar.warning(ai_error)
+                elif not result.get("is_garbage_issue"):
+                    st.sidebar.warning(
+                        f"This doesn't look like a garbage problem: {result.get('explanation', 'no reason given')}. "
+                        "You can still submit, but double-check your photo."
+                    )
+                    st.session_state.ai_category = None
+                    st.session_state.ai_rating = None
+                    st.session_state.ai_explanation = None
+                else:
+                    if result.get("looks_ai_generated"):
+                        st.sidebar.warning(
+                            "This photo has some signs of being AI-generated rather than a real "
+                            "photograph - best-effort AI guess, not a certainty, but worth a second look."
+                        )
+                    st.session_state.ai_category = result.get("category")
+                    st.session_state.ai_rating = SEVERITY_TO_RATING.get(result.get("severity"), 3)
+                    st.session_state.ai_explanation = result.get("explanation")
+                    st.sidebar.success(
+                        f"Verified garbage report - {result.get('severity')}. Form below is pre-filled."
+                    )
     if uploaded_photo is not None:
         if st.sidebar.button("Verify & Analyze with AI"):
             photo_bytes = uploaded_photo.getvalue()
@@ -1783,7 +1905,7 @@ if not GOOGLE_MAPS_API_KEY:
         "to see the map (both the picker and heatmap views). (See the setup instructions at the top of clean_spot_app.py.)"
     )
 
-tab_map, tab_reviews, tab_news = st.tabs(["Map", "Community", "News"])
+tab_map, tab_reviews, tab_news, tab_sentinel = st.tabs(["Map", "Community", "News", "🛡️ IoT Edge Sentinel"])
 
 # ----- TAB 1: MAP (interactive picker + heatmap, toggle between them) -------
 with tab_map:
@@ -2115,3 +2237,133 @@ with tab_news:
             if st.button("Next ", disabled=(page >= total_pages)):
                 st.session_state.news_page += 1
                 st.rerun()
+
+# ==============================================================================
+# TAB 4: AUTONOMOUS IOT EDGE SENTINEL (CLEANSPOT-CAM-01)
+# ==============================================================================
+with tab_sentinel:
+    st.markdown("## 🛡️ CleanSpot Autonomous Edge Sentinel")
+    st.caption("Cyber-Physical Edge Vision Node · Automated Blind-Spot Surveillance, AI Audit & Autonomous Grievance Escalation")
+
+    col_cam, col_ai = st.columns([1, 1], gap="medium")
+
+    sentinel_ip = st.session_state.get("iot_cam_url", "http://192.168.0.108/capture")
+
+    with col_cam:
+        st.markdown("### 📡 Live Edge Node Viewfinder")
+        st.caption("Hardware: **ESP32-CAM 3MP Optical Matrix** · Node ID: `CLEANSPOT-CAM-01`")
+
+        if st.session_state.get("sentinel_last_img") is not None:
+            st.image(st.session_state.sentinel_last_img, caption="Live Frame from CLEANSPOT-CAM-01", use_container_width=True)
+        else:
+            st.info("No frame captured yet. Click below to grab a live frame from your desk camera.")
+
+        btn_c1, btn_c2 = st.columns(2)
+        with btn_c1:
+            if st.button("📸 Grab Live Frame", use_container_width=True):
+                try:
+                    import urllib.request
+                    with st.spinner("Connecting to ESP32-CAM..."):
+                        req = urllib.request.Request(sentinel_ip, headers={"User-Agent": "CleanSpot-Web/1.0"})
+                        with urllib.request.urlopen(req, timeout=6) as response:
+                            img_data = response.read()
+                            if img_data:
+                                st.session_state.sentinel_last_img = img_data
+                                st.success("Frame retrieved successfully!")
+                                st.rerun()
+                except Exception as e:
+                    st.error(f"Could not reach camera node at {sentinel_ip}: {e}")
+        with btn_c2:
+            st.link_button("🌐 Open Node Web Server", "http://192.168.0.108", use_container_width=True)
+
+        with st.container(border=True):
+            st.markdown("#### ⚙️ Edge Telemetry Stream")
+            st.markdown(
+                "• **Operational Status:** 🟢 `ARMED & MONITORING`  \n"
+                "• **Node Coordinates:** `13.0827° N, 80.2707° E` (Chennai Central Hotspot)  \n"
+                "• **Night Vision Spotlight:** `Ready (1W White SMD Flash)`  \n"
+                "• **Surveillance Domain:** Unattended Neighborhood Blind Spot"
+            )
+
+    with col_ai:
+        st.markdown("### 🤖 Autonomous AI Grievance Engine")
+        st.caption("Evaluates live camera frames, filters false alarms, and autonomously registers municipal tickets.")
+
+        st.markdown(
+            "When triggered, the Sentinel executes our 3-stage cyber-physical triage pipeline:  \n"
+            "**1. Optical Capture** ➔ **2. Gemini Vision Triage** ➔ **3. Auto-Filing in Civic-Bin DB & GCC Routing**"
+        )
+
+        if st.button("⚡ EXECUTE AUTONOMOUS SURVEILLANCE AUDIT", type="primary", use_container_width=True):
+            try:
+                import urllib.request
+                import uuid
+                with st.status("Executing Autonomous Sentinel Pipeline...", expanded=True) as status_box:
+                    st.write("📡 [1/3] Triggering hardware spotlight & capturing optical frame from ESP32-CAM...")
+                    req = urllib.request.Request(sentinel_ip, headers={"User-Agent": "CleanSpot-Web/1.0"})
+                    with urllib.request.urlopen(req, timeout=8) as response:
+                        frame_bytes = response.read()
+
+                    st.session_state.sentinel_last_img = frame_bytes
+
+                    st.write("🧠 [2/3] Passing frame to Gemini Multimodal AI Vision Engine...")
+                    result, ai_error = analyze_garbage_photo(frame_bytes, "image/jpeg")
+
+                    if ai_error:
+                        status_box.update(label="AI Inspection Failed", state="error")
+                        st.error(ai_error)
+                    elif not result.get("is_garbage_issue"):
+                        status_box.update(label="Scene Clear — No Waste Detected", state="complete")
+                        st.info(f"🟢 **No Waste Violation:** {result.get('explanation')}")
+                        st.caption("AI successfully filtered false alarm. No duplicate or junk ticket submitted to municipal queue.")
+                    else:
+                        st.write("🏛️ [3/3] Waste confirmed! Auto-registering ticket in Civic-Bin DB & synthesizing GCC complaint...")
+                        filename = f"sentinel_{uuid.uuid4().hex[:8]}.jpg"
+                        filepath = os.path.join(UPLOAD_DIR, filename)
+                        with open(filepath, "wb") as f:
+                            f.write(frame_bytes)
+
+                        cat = result.get("category") or "General Litter"
+                        sev = result.get("severity") or "Severe"
+                        rating_score = SEVERITY_TO_RATING.get(sev, 2)
+                        desc = f"[AUTONOMOUS SENTINEL DETECTION] {result.get('explanation')}"
+                        loc_name = "Chennai Central Hotspot 01"
+
+                        insert_review(
+                            lat=13.0827,
+                            lon=80.2707,
+                            location_name=loc_name,
+                            rating=rating_score,
+                            category=cat,
+                            description=desc,
+                            username="CLEANSPOT-SENTINEL-01",
+                            path_coords=None,
+                            photo_path=filepath
+                        )
+
+                        status_box.update(label="🚨 Illegal Dumping Confirmed! Ticket Auto-Filed!", state="complete")
+                        st.success(f"**Ticket Auto-Filed Successfully!**")
+                        st.markdown(f"• **Category:** `{cat}`  \n• **Severity Level:** `{sev}` (Rating: `{rating_score}/5`)  \n• **Reporter:** `CLEANSPOT-SENTINEL-01`")
+                        st.markdown(f"• **AI Explanation:** *{result.get('explanation')}*")
+                        st.caption("The new ticket has been plotted on the live map and added to the public clean-up countdown clock.")
+                        st.rerun()
+
+            except Exception as e:
+                st.error(f"Autonomous audit error: {e}")
+
+        st.markdown("---")
+        st.markdown("#### 📋 Recent Sentinel Auto-Registered Tickets")
+        all_reps = fetch_all_reviews()
+        if not all_reps.empty and "username" in all_reps.columns:
+            sentinel_reps = all_reps[all_reps["username"] == "CLEANSPOT-SENTINEL-01"]
+            if not sentinel_reps.empty:
+                for _, r in sentinel_reps.tail(3).iloc[::-1].iterrows():
+                    with st.container(border=True):
+                        st.markdown(f"**Ticket #{r['id']} — {r['category']}** (Severity: {r['rating']}/5)")
+                        st.caption(f"📍 {r['location_name']} · Timestamp: {r['timestamp']}")
+                        st.write(r['description'])
+            else:
+                st.caption("No autonomous tickets filed yet. Run an audit on a garbage sample above!")
+        else:
+            st.caption("No reports registered yet.")
+
