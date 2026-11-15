@@ -175,398 +175,337 @@ GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", "")
 GOOGLE_OAUTH_REDIRECT_URI = os.environ.get("GOOGLE_OAUTH_REDIRECT_URI", "http://localhost:8501")
 
 st.set_page_config(
-    page_title="Civic-Bin | Autonomous Environmental Sanitation & Grievance Intelligence",
+    page_title="Civic-Bin | Environmental Sanitation & Grievance Intelligence",
     page_icon="🌿",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Clean Spot / Civic-Bin logo: biophilic vector mark drawn in pure SVG.
-CLEAN_SPOT_MARK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="cbGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#315C3B"/><stop offset="100%" stop-color="#C7E66A"/></linearGradient><linearGradient id="shieldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#14251B"/><stop offset="100%" stop-color="#1E3827"/></linearGradient></defs><circle cx="100" cy="100" r="88" fill="none" stroke="#315C3B" stroke-width="2.5" stroke-dasharray="6 5" opacity="0.45"/><circle cx="100" cy="100" r="80" fill="url(#shieldGrad)" stroke="url(#cbGrad)" stroke-width="3.5"/><g fill="none" stroke="#F5F4ED" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><path d="M72 84 L78 142 Q79 150 88 150 L112 150 Q121 150 122 142 L128 84"/><path d="M62 84 H138"/><path d="M86 84 V76 Q86 71 90 71 H110 Q114 71 114 76 V84"/></g><path d="M100 134 V104" stroke="#C7E66A" stroke-width="4.5" stroke-linecap="round"/><path d="M92 114 L100 102 L108 114" stroke="#C7E66A" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="100" cy="94" r="3.5" fill="#C7E66A"/></svg>'
+# Clean, professional vector mark
+CLEAN_SPOT_MARK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160"><rect width="160" height="160" rx="14" fill="#183B2A"/><path d="M52 64 L58 116 Q59 122 66 122 L94 122 Q101 122 102 116 L108 64" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M44 64 H116" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><path d="M66 64 V56 Q66 52 70 52 H90 Q94 52 94 56 V64" stroke="#FFFFFF" stroke-width="4.5" fill="none"/><path d="M80 108 V82 M80 82 Q80 72 92 74 Q92 84 80 88" fill="none" stroke="#B9D96A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
 
 def render_logo(width, container=st):
-    """Shows the Civic-Bin mark, centred, on a transparent background."""
+    """Renders the Civic-Bin brand identity mark."""
     container.markdown(
-        f'<div style="display:flex;justify-content:center;margin:4px 0 12px 0;">'
+        f'<div style="display:flex;justify-content:center;margin:6px 0 10px 0;">'
         f'<div style="width:{width}px;height:{width}px;">{CLEAN_SPOT_MARK_SVG}</div></div>',
         unsafe_allow_html=True,
     )
 
 
-render_logo(120, st.sidebar)
+render_logo(88, st.sidebar)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # --------------------------------------------------------------------------
-# THEME - Biophilic Nature-Tech Design System (Verdea, Mossa, Donezo)
-# Colors: Forest Deep #14251B, Primary Green #315C3B, Sage #A7B99A, Lime #C7E66A
-# Warm off-white background #F5F4ED with crisp surface cards #FFFFFF.
+# DESIGN SYSTEM: RESTRAINED EDITORIAL ENVIRONMENTAL TECHNOLOGY
+# Palette:
+# Primary Forest: #183B2A | Secondary Forest: #28543A | Charcoal: #202923
+# Page Background: #F6F6F0 | Surface White: #FFFFFF | Soft Sage: #E7EDE4
+# Muted Green: #66836B | Secondary Text: #68736B | Border: #E2E5DE
+# Success: #267348 | Warning: #A66B17 | Error: #B54740 | Accent Lime: #B9D96A
 # --------------------------------------------------------------------------
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
-
-    :root {
-        --forest-deep: #14251B;
-        --green-primary: #315C3B;
-        --green-sage: #A7B99A;
-        --lime-muted: #C7E66A;
-        --off-white: #F5F4ED;
-        --surface-white: #FFFFFF;
-        --charcoal: #242923;
-        --text-secondary: #777D73;
-        --border-subtle: rgba(49, 92, 59, 0.16);
-        --border-light: rgba(20, 37, 27, 0.08);
-        --card-shadow: 0 4px 20px rgba(20, 37, 27, 0.04), 0 1px 3px rgba(20, 37, 27, 0.02);
-        --card-shadow-hover: 0 10px 28px rgba(20, 37, 27, 0.08), 0 2px 6px rgba(20, 37, 27, 0.04);
-        --alert-red: #DC2626;
-        --warning-amber: #D97706;
-    }
-
-    @keyframes fadeUp {
-        0%   { opacity: 0; transform: translateY(14px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes pulseRing {
-        0%   { transform: scale(0.7); opacity: 0.9; }
-        80%  { transform: scale(1.8); opacity: 0; }
-        100% { transform: scale(1.8); opacity: 0; }
-    }
-    @keyframes barFill {
-        0%   { width: 4%; }
-        100% { width: 100%; }
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
     html, body, [class*="css"], .stApp {
-        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-        background-color: var(--off-white) !important;
-        color: var(--charcoal) !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        background-color: #F6F6F0 !important;
+        color: #202923 !important;
+    }
+
+    /* Universal Text Color Guard */
+    .stApp p, .stApp span, .stApp div, .stApp li, .stApp td, .stApp th {
+        color: #202923;
     }
 
     /* Headings */
-    h1, h2, h3, .brand-display {
-        font-family: 'Syne', 'Plus Jakarta Sans', sans-serif !important;
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Inter', sans-serif !important;
+        color: #183B2A !important;
         font-weight: 700 !important;
-        color: var(--forest-deep) !important;
-        letter-spacing: -0.02em !important;
+        letter-spacing: -0.015em !important;
     }
 
-    /* Sidebar Styling */
+    /* Sidebar */
     section[data-testid="stSidebar"] {
         background-color: #FFFFFF !important;
-        border-right: 1px solid rgba(49, 92, 59, 0.12) !important;
-        box-shadow: 2px 0 16px rgba(20, 37, 27, 0.03) !important;
+        border-right: 1px solid #E2E5DE !important;
+        box-shadow: none !important;
+        padding-top: 1rem !important;
     }
-    section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3 {
-        font-size: 1.05rem !important;
-        color: var(--forest-deep) !important;
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3 {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: #183B2A !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
+        margin-top: 18px !important;
+        margin-bottom: 8px !important;
+    }
+
+    /* Form Labels & Captions */
+    label[data-testid="stWidgetLabel"],
+    label[data-testid="stWidgetLabel"] p,
+    label[data-testid="stWidgetLabel"] span {
+        color: #202923 !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+    }
+    [data-testid="stCaptionContainer"] p,
+    [data-testid="stCaptionContainer"] {
+        color: #68736B !important;
+        font-size: 12.5px !important;
     }
 
     /* Buttons */
     div.stButton > button, .stForm button, div.stLinkButton > a, div.stDownloadButton > button {
-        background-color: var(--forest-deep) !important;
+        background-color: #183B2A !important;
         color: #FFFFFF !important;
-        border: 1px solid var(--forest-deep) !important;
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        border: 1px solid #183B2A !important;
+        font-family: 'Inter', sans-serif !important;
         font-weight: 600 !important;
-        font-size: 13.5px !important;
-        letter-spacing: 0.01em;
-        border-radius: 10px !important;
-        padding: 8px 18px !important;
-        box-shadow: 0 2px 8px rgba(20, 37, 27, 0.08) !important;
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        font-size: 13px !important;
+        border-radius: 6px !important;
+        padding: 8px 16px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+        transition: background-color 0.15s ease, border-color 0.15s ease !important;
     }
     div.stButton > button:hover, div.stLinkButton > a:hover, div.stDownloadButton > button:hover {
-        background-color: var(--green-primary) !important;
-        border-color: var(--green-primary) !important;
-        color: var(--lime-muted) !important;
-        box-shadow: 0 4px 14px rgba(49, 92, 59, 0.22) !important;
-        transform: translateY(-1px) !important;
+        background-color: #28543A !important;
+        border-color: #28543A !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.06) !important;
     }
-
-    /* Primary Accent Button */
     div.stButton > button[kind="primary"], button[data-testid="baseButton-primary"] {
-        background: linear-gradient(135deg, #14251B 0%, #315C3B 100%) !important;
-        color: var(--lime-muted) !important;
-        border: 1px solid rgba(199, 230, 106, 0.35) !important;
-        box-shadow: 0 4px 16px rgba(20, 37, 27, 0.18) !important;
+        background-color: #183B2A !important;
+        color: #FFFFFF !important;
+        border: 1px solid #183B2A !important;
     }
 
-    /* Inputs, Selects, Textareas */
+    /* Input Controls */
     div[data-baseweb="input"], div[data-baseweb="base-input"], div[data-baseweb="select"] > div,
     div[data-baseweb="textarea"], textarea, .stTextInput input, .stNumberInput input {
         background-color: #FFFFFF !important;
-        border: 1px solid #D6DED1 !important;
-        color: var(--charcoal) !important;
-        border-radius: 9px !important;
+        border: 1px solid #D1D5DB !important;
+        color: #202923 !important;
+        border-radius: 6px !important;
         font-size: 13.5px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
+        box-shadow: none !important;
     }
     div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within,
     div[data-baseweb="textarea"]:focus-within {
-        border-color: var(--green-primary) !important;
-        box-shadow: 0 0 0 3px rgba(49, 92, 59, 0.12) !important;
+        border-color: #183B2A !important;
+        box-shadow: 0 0 0 2px rgba(24, 59, 42, 0.12) !important;
     }
 
     /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        border-bottom: 1px solid rgba(49, 92, 59, 0.14) !important;
-        padding-bottom: 2px;
-        margin-bottom: 24px;
+        gap: 6px !important;
+        border-bottom: 1px solid #E2E5DE !important;
+        background: transparent !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 22px !important;
     }
     .stTabs [data-baseweb="tab"] {
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-weight: 600 !important;
-        font-size: 14px !important;
-        color: var(--text-secondary) !important;
-        border-radius: 8px 8px 0 0 !important;
-        padding: 10px 18px !important;
-        border: none !important;
-        background: transparent !important;
-        transition: all 0.2s ease !important;
+        background: #FFFFFF !important;
+        border: 1px solid #E2E5DE !important;
+        border-bottom: none !important;
+        border-radius: 6px 6px 0 0 !important;
+        padding: 8px 18px !important;
+        transition: all 0.15s ease !important;
     }
-    .stTabs [data-baseweb="tab"]:hover {
-        color: var(--forest-deep) !important;
-        background: rgba(167, 185, 154, 0.15) !important;
+    .stTabs [data-baseweb="tab"] p,
+    .stTabs [data-baseweb="tab"] span,
+    .stTabs [data-baseweb="tab"] div {
+        color: #68736B !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+    }
+    .stTabs [data-baseweb="tab"]:hover p,
+    .stTabs [data-baseweb="tab"]:hover span {
+        color: #183B2A !important;
     }
     .stTabs [aria-selected="true"] {
-        color: var(--forest-deep) !important;
-        background: #FFFFFF !important;
-        border-bottom: 3px solid var(--green-primary) !important;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.02) !important;
+        background: #183B2A !important;
+        border-color: #183B2A !important;
     }
-
-    /* Streamlit Containers & Cards */
-    div[data-testid="stVerticalBlockBorderWrapper"] > div {
-        background: #FFFFFF !important;
-        border: 1px solid rgba(49, 92, 59, 0.14) !important;
-        border-radius: 14px !important;
-        box-shadow: 0 4px 18px rgba(20, 37, 27, 0.04) !important;
-        padding: 18px 20px !important;
-    }
-    div[data-testid="stExpander"] {
-        border: 1px solid rgba(49, 92, 59, 0.14) !important;
-        border-radius: 12px !important;
-        background: #FFFFFF !important;
-        box-shadow: 0 2px 12px rgba(20, 37, 27, 0.03) !important;
-    }
-
-    /* Metrics */
-    div[data-testid="stMetricValue"] {
-        color: var(--forest-deep) !important;
-        font-family: 'Syne', 'Plus Jakarta Sans', sans-serif !important;
+    .stTabs [aria-selected="true"] p,
+    .stTabs [aria-selected="true"] span,
+    .stTabs [aria-selected="true"] div {
+        color: #FFFFFF !important;
         font-weight: 700 !important;
     }
-    div[data-testid="stMetricLabel"] {
-        color: var(--text-secondary) !important;
+
+    /* Containers & Expanders */
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        background: #FFFFFF !important;
+        border: 1px solid #E2E5DE !important;
+        border-radius: 8px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
+        padding: 16px 18px !important;
+    }
+    div[data-testid="stExpander"] {
+        border: 1px solid #E2E5DE !important;
+        border-radius: 8px !important;
+        background: #FFFFFF !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
+        margin-bottom: 10px !important;
+    }
+    div[data-testid="stExpander"] summary p,
+    div[data-testid="stExpander"] summary span {
+        color: #202923 !important;
         font-weight: 600 !important;
-        font-size: 0.82rem !important;
+        font-size: 13.5px !important;
+    }
+
+    /* Alerts (Warning, Info, Error) */
+    div[data-testid="stAlert"] {
+        background-color: #FFFBEB !important;
+        border: 1px solid #F59E0B !important;
+        border-left: 4px solid #D97706 !important;
+        border-radius: 6px !important;
+        padding: 10px 14px !important;
+        margin-bottom: 14px !important;
+    }
+    div[data-testid="stAlert"] p,
+    div[data-testid="stAlert"] span,
+    div[data-testid="stAlert"] div {
+        color: #92400E !important;
+        font-size: 13px !important;
+        line-height: 1.45 !important;
+        font-weight: 500 !important;
+    }
+    div[data-testid="stAlert"] svg {
+        fill: #D97706 !important;
+        color: #D97706 !important;
+    }
+
+    /* Native Metric overrides */
+    div[data-testid="stMetricValue"],
+    div[data-testid="stMetricValue"] div {
+        color: #183B2A !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 1.6rem !important;
+    }
+    div[data-testid="stMetricLabel"],
+    div[data-testid="stMetricLabel"] p {
+        color: #68736B !important;
+        font-weight: 600 !important;
+        font-size: 0.78rem !important;
         text-transform: uppercase !important;
         letter-spacing: 0.04em !important;
     }
 
-    /* Custom Badges & Telemetry Panels */
-    .eco-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #E8F0E6;
-        color: #23542C;
-        border: 1px solid #C5DBC0;
-        padding: 4px 12px;
-        border-radius: 999px;
-        font-size: 11.5px;
+    /* Editorial Hero */
+    .editorial-hero {
+        background: #FFFFFF;
+        border: 1px solid #E2E5DE;
+        border-radius: 8px;
+        padding: 24px 28px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .editorial-tag {
+        font-size: 11px;
         font-weight: 700;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
+        color: #66836B;
+        margin-bottom: 8px;
     }
-    .eco-pill.dark {
-        background: rgba(199, 230, 106, 0.14);
-        color: #C7E66A;
-        border: 1px solid rgba(199, 230, 106, 0.3);
-    }
-    .status-open {
-        display: inline-block;
-        background: #FDF2F2;
-        color: #9B1C1C;
-        border: 1px solid #F8B4B4;
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 11px;
+    .editorial-title {
+        font-size: 1.85rem;
         font-weight: 700;
+        color: #183B2A;
+        margin: 0 0 8px 0;
+        letter-spacing: -0.02em;
     }
-    .status-fixed {
-        display: inline-block;
-        background: #EBF5EC;
-        color: #1F6830;
-        border: 1px solid #C3E6C7;
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 700;
-    }
-    .hero-banner {
-        background: linear-gradient(135deg, #14251B 0%, #1D3625 60%, #14251B 100%);
-        border: 1px solid rgba(167, 185, 154, 0.25);
-        border-radius: 18px;
-        padding: 32px 36px;
-        margin: -10px -10px 24px -10px;
-        color: #F5F4ED;
-        box-shadow: 0 10px 32px rgba(20, 37, 27, 0.15);
-        position: relative;
-        overflow: hidden;
-        animation: fadeUp 0.6s ease-out;
-    }
-    .hero-banner .hero-eyebrow {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 14px;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    .hero-banner h1 {
-        font-family: 'Syne', sans-serif !important;
-        font-size: 2.5rem !important;
-        font-weight: 800 !important;
-        color: #FFFFFF !important;
-        margin: 0 0 10px 0 !important;
-        letter-spacing: -0.03em !important;
-    }
-    .hero-banner p {
-        color: #D3DFCE;
-        margin: 0;
-        max-width: 720px;
-        font-size: 1.05rem;
+    .editorial-desc {
+        font-size: 14.5px;
+        color: #68736B;
         line-height: 1.55;
-    }
-    .hero-card {
-        background: #FFFFFF;
-        border: 1px solid rgba(49, 92, 59, 0.14);
-        border-radius: 12px;
-        padding: 14px 16px;
-        margin-bottom: 12px;
-        color: var(--charcoal);
-        box-shadow: 0 2px 10px rgba(20, 37, 27, 0.04);
-    }
-    .hero-card b { color: var(--forest-deep); }
-
-    .eco-card {
-        background: #FFFFFF;
-        border: 1px solid rgba(49, 92, 59, 0.14);
-        border-radius: 14px;
-        padding: 18px 20px;
-        box-shadow: 0 4px 18px rgba(20, 37, 27, 0.04);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .eco-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(20, 37, 27, 0.07);
-    }
-    .eco-card-dark {
-        background: #14251B;
-        border: 1px solid rgba(167, 185, 154, 0.25);
-        border-radius: 14px;
-        padding: 20px 22px;
-        color: #F5F4ED;
-        box-shadow: 0 8px 24px rgba(20, 37, 27, 0.15);
+        margin: 0;
+        max-width: 760px;
     }
 
-    /* Splash Screen */
-    .splash-wrap {
-        min-height: 78vh;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        text-align: center; padding-top: 4vh;
-        animation: fadeUp 0.7s ease-out;
-    }
-    .splash-core {
-        position: relative;
-        width: 150px; height: 150px;
-        display: flex; align-items: center; justify-content: center;
+    /* KPI Row Grid - Non-truncating */
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
         margin-bottom: 20px;
     }
-    .splash-ring {
-        position: absolute; inset: 0;
-        border: 2px solid var(--green-primary);
-        border-radius: 50%;
-        animation: pulseRing 2.4s ease-out infinite;
+    .kpi-tile {
+        background: #FFFFFF;
+        border: 1px solid #E2E5DE;
+        border-radius: 8px;
+        padding: 14px 16px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
-    .splash-ring.ring2 { border-color: var(--lime-muted); animation-delay: 0.8s; }
-    .splash-ring.ring3 { border-color: var(--green-sage); animation-delay: 1.6s; }
-    .splash-title {
-        font-family: 'Syne', sans-serif;
-        font-size: 3.2rem;
-        font-weight: 800;
-        letter-spacing: -0.03em;
-        color: #FFFFFF;
+    .kpi-tile-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #68736B;
+        letter-spacing: 0.04em;
+        margin-bottom: 6px;
     }
-    .splash-title span { color: var(--lime-muted); }
-    .splash-sub {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        color: #D3DFCE;
-        font-size: 14px;
-        font-weight: 500;
-        margin-top: 6px;
-        margin-bottom: 26px;
+    .kpi-tile-val {
+        font-size: 24px;
+        font-weight: 700;
+        color: #183B2A;
+        line-height: 1.1;
     }
-    .splash-bar {
-        width: 320px; max-width: 70vw; height: 6px;
-        background: rgba(255, 255, 255, 0.12);
-        border-radius: 4px;
-        overflow: hidden;
-        border: 1px solid rgba(199, 230, 106, 0.3);
-        margin-bottom: 12px;
-    }
-    .splash-bar-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--green-primary), var(--lime-muted));
-        animation: barFill 2.6s ease-in-out forwards;
-    }
-    .splash-status {
-        font-family: 'Space Grotesk', monospace;
-        color: #A7B99A;
-        font-size: 12px;
-        letter-spacing: 0.05em;
-        margin-bottom: 24px;
+    .kpi-tile-val.warning { color: #A66B17; }
+    .kpi-tile-val.success { color: #267348; }
+    .kpi-tile-val.accent { color: #28543A; }
+    .kpi-tile-sub {
+        font-size: 11.5px;
+        color: #68736B;
+        margin-top: 4px;
     }
 
-    /* Auth Page */
-    .auth-card {
-        background: #FFFFFF;
-        border: 1px solid rgba(49, 92, 59, 0.14);
-        border-radius: 18px;
-        padding: 28px 32px 10px 32px;
-        text-align: center;
-        margin-bottom: 8px;
-        box-shadow: 0 8px 30px rgba(20, 37, 27, 0.06);
-        animation: fadeUp 0.6s ease-out;
+    /* Badges */
+    .badge-open {
+        background: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #FDE68A;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-block;
     }
-    .auth-title {
-        font-size: 1.85rem !important;
-        margin: 4px 0 8px 0 !important;
-        color: var(--forest-deep) !important;
-        font-family: 'Syne', sans-serif !important;
-    }
-    .auth-sub { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 6px; }
-    .auth-divider {
-        text-align: center; color: var(--text-secondary); font-family: 'Space Grotesk', monospace;
-        font-size: 11px; letter-spacing: 2px; margin: 16px 0 12px 0; text-transform: uppercase;
+    .badge-fixed {
+        background: #E7EDE4;
+        color: #267348;
+        border: 1px solid #C3D5BF;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-block;
     }
 
     /* Scrollbars */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #EDECE4; }
-    ::-webkit-scrollbar-thumb { background: #A7B99A; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #315C3B; }
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: #F6F6F0; }
+    ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Registers our hand-built HTML/JS components. `path` points at the folder
-# containing each index.html - no build step, Streamlit just serves it as-is.
+# Registers our hand-built HTML/JS components.
 _component_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gmaps_component")
 gmaps_component = components.declare_component("gmaps_component", path=_component_dir)
 
@@ -575,37 +514,28 @@ geo_component = components.declare_component("geo_component", path=_geo_componen
 
 
 # --------------------------------------------------------------------------
-# SPLASH SCREEN + ACCESS TERMINAL (auth page)
+# SPLASH SCREEN + ACCESS TERMINAL
 # --------------------------------------------------------------------------
 def render_splash_screen():
-    """
-    Biophilic animated boot sequence. Auto-advances to the access terminal.
-    """
     st.markdown(
         """
         <style>
         section[data-testid="stSidebar"], header[data-testid="stHeader"] { display: none !important; }
-        .stApp { background-color: #14251B !important; }
+        .stApp { background-color: #183B2A !important; }
+        .stApp p, .stApp span, .stApp div { color: #FFFFFF !important; }
         </style>
-        <div class="splash-wrap">
-            <div class="splash-core">
-                <div class="splash-ring ring1"></div>
-                <div class="splash-ring ring2"></div>
-                <div class="splash-ring ring3"></div>
-            </div>
-            <div class="eco-pill dark" style="margin-bottom: 12px;">● Autonomous Civic Technology</div>
-            <div class="splash-title">CIVIC<span>BIN</span></div>
-            <div class="splash-sub">Intelligent Environmental Sanitation & Autonomous Edge Surveillance</div>
-            <div class="splash-bar"><div class="splash-bar-fill"></div></div>
-            <div class="splash-status">Synchronizing geospatial index & IoT edge sentinel nodes...</div>
+        <div style="min-height: 75vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #B9D96A; text-transform: uppercase; margin-bottom: 12px;">CIVIC ENVIRONMENTAL INTELLIGENCE</div>
+            <h1 style="font-size: 2.8rem; font-weight: 700; color: #FFFFFF !important; margin: 0 0 6px 0;">CIVIC-BIN</h1>
+            <p style="color: #E7EDE4; font-size: 14px; max-width: 500px; margin: 0 0 24px 0;">Making every public space accountable through community reporting, Gemini AI vision triage, and autonomous edge surveillance.</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
     _, mid_col, _ = st.columns([1, 1, 1])
     with mid_col:
-        render_logo(140)
-        if st.button("Enter Civic-Bin Platform →", key="splash_enter_btn", use_container_width=True):
+        render_logo(100)
+        if st.button("Enter Platform", key="splash_enter_btn", use_container_width=True):
             st.session_state.splash_done = True
             st.rerun()
     components.html(
@@ -616,13 +546,13 @@ def render_splash_screen():
                 const doc = window.parent.document;
                 const buttons = doc.querySelectorAll('button');
                 for (const b of buttons) {
-                    if (b.innerText && (b.innerText.includes('Enter Civic-Bin') || b.innerText.includes('Enter Clean Spot'))) {
+                    if (b.innerText && (b.innerText.includes('Enter Platform') || b.innerText.includes('Enter Clean Spot') || b.innerText.includes('Enter Civic-Bin'))) {
                         b.click();
                         break;
                     }
                 }
             } catch (e) {}
-        }, 2600);
+        }, 2200);
         </script>
         """,
         height=0,
@@ -630,22 +560,19 @@ def render_splash_screen():
 
 
 def render_auth_page():
-    """
-    Centered access terminal for local accounts or Google OAuth.
-    """
     st.markdown(
         """<style>section[data-testid="stSidebar"], header[data-testid="stHeader"] { display: none !important; }</style>""",
         unsafe_allow_html=True,
     )
-    _, mid_col, _ = st.columns([1, 1.25, 1])
+    _, mid_col, _ = st.columns([1, 1.2, 1])
     with mid_col:
-        render_logo(120)
+        render_logo(80)
         st.markdown(
             """
-            <div class="auth-card">
-                <div class="eco-pill" style="margin-bottom: 10px;">Municipal & Community Access</div>
-                <h1 class="auth-title">Sign in to Civic-Bin</h1>
-                <p class="auth-sub">Report neighbourhood waste blind spots, track 7-day clean-up SLAs, and earn community Civic Score points.</p>
+            <div style="background: #FFFFFF; border: 1px solid #E2E5DE; border-radius: 8px; padding: 24px 28px 12px 28px; text-align: center; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.05em; color: #66836B; text-transform: uppercase; margin-bottom: 4px;">OPERATIONAL ACCESS</div>
+                <h2 style="font-size: 1.6rem; color: #183B2A; margin: 0 0 6px 0;">Sign in to Civic-Bin</h2>
+                <p style="color: #68736B; font-size: 13px; margin: 0;">Report waste blind spots, track 7-day clean-up SLAs, and verify public resolutions.</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -673,9 +600,9 @@ def render_auth_page():
         else:
             if GOOGLE_OAUTH_CLIENT_ID:
                 st.link_button("Sign in with Google", build_google_auth_url(), use_container_width=True)
-                st.markdown('<div class="auth-divider">— or use credentials —</div>', unsafe_allow_html=True)
+                st.markdown('<div style="text-align:center; color:#68736B; font-size:11px; margin:12px 0; text-transform:uppercase;">— or use local credentials —</div>', unsafe_allow_html=True)
             else:
-                st.caption("Google sign-in not configured (set GOOGLE_OAUTH_CLIENT_ID/SECRET to enable it).")
+                st.caption("Google OAuth not configured (set GOOGLE_OAUTH_CLIENT_ID/SECRET to enable).")
 
             login_tab, signup_tab = st.tabs(["Sign In", "Sign Up"])
             with login_tab:
@@ -690,7 +617,7 @@ def render_auth_page():
             with signup_tab:
                 signup_username = st.text_input("Choose a username", key="signup_username")
                 signup_password = st.text_input("Choose a password", type="password", key="signup_password")
-                if st.button("Sign Up", key="signup_btn", use_container_width=True):
+                if st.button("Create Account", key="signup_btn", use_container_width=True):
                     if not signup_username.strip() or not signup_password:
                         st.error("Username and password are both required.")
                     else:
@@ -701,7 +628,7 @@ def render_auth_page():
                         else:
                             st.error(err)
 
-            st.markdown('<div class="auth-divider">— or explore —</div>', unsafe_allow_html=True)
+            st.markdown('<div style="text-align:center; color:#68736B; font-size:11px; margin:12px 0; text-transform:uppercase;">— or —</div>', unsafe_allow_html=True)
             if st.button("Continue browsing as Guest", key="guest_btn", use_container_width=True):
                 st.session_state.guest_mode = True
                 st.rerun()
@@ -1656,19 +1583,19 @@ if st.session_state.current_user is None and not st.session_state.guest_mode:
     st.stop()
 
 # --------------------------------------------------------------------------
-# SIDEBAR - PROFILE
+
+# --------------------------------------------------------------------------
+# SIDEBAR - CITIZEN PROFILE & REPORTING ENGINE
 # --------------------------------------------------------------------------
 if st.session_state.current_user is None:
     st.sidebar.markdown(
         """
-        <div class="eco-card" style="padding: 14px 16px; margin-bottom: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <b style="font-size: 14px; color: #14251B;">Guest Citizen</b>
-                <span class="eco-pill" style="background:#EDECE4; color:#5A6255; border-color:#D6DED1;">Visitor</span>
+        <div style="background: #F6F6F0; border: 1px solid #E2E5DE; border-radius: 6px; padding: 12px 14px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <b style="font-size: 13.5px; color: #183B2A;">Guest Mode</b>
+                <span style="font-size: 10px; font-weight: 700; color: #68736B; text-transform: uppercase;">Observer</span>
             </div>
-            <div style="font-size: 12px; color: #777D73;">
-                Sign in to submit reports, vote on hotspots, and earn Civic Score points.
-            </div>
+            <div style="font-size: 12px; color: #68736B;">Sign in to submit incident reports, vote on hotspots, and earn Civic Score points.</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1680,14 +1607,12 @@ else:
     score = get_civic_score(st.session_state.current_user)
     st.sidebar.markdown(
         f"""
-        <div class="eco-card" style="padding: 14px 16px; margin-bottom: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <b style="font-size: 15px; color: #14251B;">@{st.session_state.current_user}</b>
-                <span class="eco-pill">{civic_badge(score)}</span>
+        <div style="background: #F6F6F0; border: 1px solid #E2E5DE; border-radius: 6px; padding: 12px 14px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <b style="font-size: 14px; color: #183B2A;">@{st.session_state.current_user}</b>
+                <span style="font-size: 11px; font-weight: 700; color: #267348; background: #E7EDE4; padding: 2px 6px; border-radius: 4px;">{civic_badge(score)}</span>
             </div>
-            <div style="font-size: 13px; color: #777D73;">
-                Civic Score: <b style="color: #315C3B; font-size: 15px;">{score} pts</b>
-            </div>
+            <div style="font-size: 12px; color: #68736B;">Civic Score: <b style="color: #183B2A;">{score} pts</b></div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1699,11 +1624,8 @@ else:
 
 st.sidebar.markdown("---")
 
-# --------------------------------------------------------------------------
-# SIDEBAR - LOCATION TOOLS (decluttered: one status line always visible,
-# everything else tucked into a collapsed expander)
-# --------------------------------------------------------------------------
-st.sidebar.header("Location")
+# Location targeting
+st.sidebar.markdown("### Location Target")
 
 if st.session_state.segment_coords:
     points = st.session_state.segment_coords
@@ -1716,9 +1638,9 @@ elif st.session_state.clicked_lat is not None:
         f"{get_location_name(st.session_state.clicked_lat, st.session_state.clicked_lon)}"
     )
 else:
-    st.sidebar.caption("Nothing selected - click the map, or use a tool below.")
+    st.sidebar.caption("No location selected - click map or search below.")
 
-with st.sidebar.expander("Use my location or search"):
+with st.sidebar.expander("Target Location via GPS or Search"):
     geo_result = geo_component(key="geo_button", default=None)
     if geo_result and geo_result != st.session_state._last_geo_raw:
         st.session_state._last_geo_raw = geo_result
@@ -1747,22 +1669,13 @@ with st.sidebar.expander("Use my location or search"):
         st.session_state.segment_coords = None
         st.rerun()
 
-# --------------------------------------------------------------------------
-# SIDEBAR - SUBMISSION FORM
-# --------------------------------------------------------------------------
-st.sidebar.header("Report Garbage")
+# Reporting form
+st.sidebar.markdown("### Report Waste Incident")
 
 if st.session_state.current_user is None:
-    st.sidebar.info("Sign in above to submit a review.")
+    st.sidebar.info("Sign in above to submit an incident report.")
 else:
-    # Both a live camera and a file upload are offered - live capture is
-    # the stronger anti-AI-image safeguard (no file picker to upload a
-    # pre-existing/synthetic image from), but not everyone can safely stop
-    # and shoot a photo mid-drive, so upload-from-device stays available
-    # too. The AI "looks_ai_generated" check below is the safety net
-    # for the upload path - a soft signal, not a guarantee either way.
-    st.sidebar.caption("Never touch medical, chemical, or sharp waste. Report it from a safe distance.")
-    st.sidebar.caption("Add a photo, then verify it with AI")
+    st.sidebar.caption("Safety notice: Do not touch hazardous or sharp waste. Report from a safe distance.")
     photo_method = st.sidebar.radio(
         "Photo method", ["Take a live photo", "Upload from device", "📡 IoT Edge Node"],
         horizontal=True, label_visibility="collapsed", key="review_photo_method",
@@ -1775,7 +1688,7 @@ else:
         )
     else:
         uploaded_photo = None
-        st.sidebar.markdown("**📡 CLEANSPOT-CAM-01 (ESP32-CAM)**")
+        st.sidebar.markdown("**Hardware Node: CLEANSPOT-CAM-01**")
         cam_endpoint = st.sidebar.text_input(
             "Node Endpoint",
             value=st.session_state.get("iot_cam_url", "http://192.168.0.108/capture"),
@@ -1783,7 +1696,7 @@ else:
             help="Live URL of the ESP32-CAM node on local Wi-Fi",
         )
         st.session_state["iot_cam_url"] = cam_endpoint
-        if st.sidebar.button("📸 Trigger & Fetch from IoT Node", key="btn_trigger_iot", use_container_width=True):
+        if st.sidebar.button("Trigger & Fetch from IoT Node", key="btn_trigger_iot", use_container_width=True):
             try:
                 import urllib.request
                 with st.spinner("Connecting to CLEANSPOT-CAM-01 & triggering flash..."):
@@ -1795,14 +1708,14 @@ else:
                             st.session_state.pending_photo_bytes = img_bytes
                             st.session_state.clicked_lat = 13.0827
                             st.session_state.clicked_lon = 80.2707
-                            st.sidebar.success("Captured live frame from ESP32-CAM! Node GPS: 13.0827, 80.2707")
+                            st.sidebar.success("Captured frame from ESP32-CAM (GPS: 13.0827, 80.2707)")
             except Exception as e:
                 st.sidebar.error(f"Could not connect to IoT node: {e}")
 
         if st.session_state.get("iot_photo_bytes"):
             st.sidebar.image(
                 st.session_state.iot_photo_bytes,
-                caption="Live Capture: CLEANSPOT-CAM-01 (Chennai Central)",
+                caption="Live Frame: CLEANSPOT-CAM-01",
                 use_container_width=True,
             )
             if st.sidebar.button("Verify & Analyze with AI", key="btn_verify_iot", use_container_width=True):
@@ -1813,26 +1726,21 @@ else:
                     st.sidebar.warning(ai_error)
                 elif not result.get("is_garbage_issue"):
                     st.sidebar.warning(
-                        f"This doesn't look like a garbage problem: {result.get('explanation', 'no reason given')}. "
-                        "You can still submit, but double-check your photo."
+                        f"Non-waste image: {result.get('explanation', 'no reason given')}. Please verify before submitting."
                     )
                     st.session_state.ai_category = None
                     st.session_state.ai_rating = None
                     st.session_state.ai_explanation = None
                 else:
                     if result.get("looks_ai_generated"):
-                        st.sidebar.warning(
-                            "This photo has some signs of being AI-generated rather than a real "
-                            "photograph - best-effort AI guess, not a certainty, but worth a second look."
-                        )
+                        st.sidebar.warning("Note: Photo shows signs of synthetic generation.")
                     st.session_state.ai_category = result.get("category")
                     st.session_state.ai_rating = SEVERITY_TO_RATING.get(result.get("severity"), 3)
                     st.session_state.ai_explanation = result.get("explanation")
-                    st.sidebar.success(
-                        f"Verified garbage report - {result.get('severity')}. Form below is pre-filled."
-                    )
+                    st.sidebar.success(f"Verified: {result.get('category')} ({result.get('severity')})")
+
     if uploaded_photo is not None:
-        if st.sidebar.button("Verify & Analyze with AI"):
+        if st.sidebar.button("Verify & Analyze with AI", key="btn_verify_upload", use_container_width=True):
             photo_bytes = uploaded_photo.getvalue()
             mime_type = uploaded_photo.type or "image/jpeg"
             result, ai_error = analyze_garbage_photo(photo_bytes, mime_type)
@@ -1840,28 +1748,22 @@ else:
                 st.sidebar.warning(ai_error)
             elif not result.get("is_garbage_issue"):
                 st.sidebar.warning(
-                    f"This doesn't look like a garbage problem: {result.get('explanation', 'no reason given')}. "
-                    "You can still submit, but double-check your photo."
+                    f"Non-waste image: {result.get('explanation', 'no reason given')}. Please verify before submitting."
                 )
                 st.session_state.ai_category = None
                 st.session_state.ai_rating = None
                 st.session_state.ai_explanation = None
             else:
                 if result.get("looks_ai_generated"):
-                    st.sidebar.warning(
-                        "This photo has some signs of being AI-generated rather than a real "
-                        "photograph - best-effort AI guess, not a certainty, but worth a second look."
-                    )
+                    st.sidebar.warning("Note: Photo shows signs of synthetic generation.")
                 st.session_state.ai_category = result.get("category")
                 st.session_state.ai_rating = SEVERITY_TO_RATING.get(result.get("severity"), 3)
                 st.session_state.ai_explanation = result.get("explanation")
-                st.sidebar.success(
-                    f"Verified garbage report - {result.get('severity')}. Form below is pre-filled."
-                )
+                st.sidebar.success(f"Verified: {result.get('category')} ({result.get('severity')})")
             st.session_state.pending_photo_bytes = photo_bytes
 
         if st.session_state.get("ai_explanation"):
-            st.sidebar.caption(f"AI verdict: {st.session_state.ai_explanation}")
+            st.sidebar.caption(f"AI Verdict: {st.session_state.ai_explanation}")
 
     default_category_index = (
         CATEGORIES.index(st.session_state.get("ai_category"))
@@ -1870,11 +1772,11 @@ else:
     default_rating = st.session_state.get("ai_rating") or 3
 
     with st.sidebar.form("review_form", clear_on_submit=True):
-        st.caption("Location is captured automatically from your map selection above - no typing needed.")
+        st.caption("Coordinates are captured automatically from your map target selection.")
         category = st.selectbox("Category", CATEGORIES, index=default_category_index)
-        rating = st.slider("Cleanliness (1 = hazardous / filthy, 5 = clean)", 1, 5, default_rating)
-        description = st.text_area("Description", placeholder="Describe the garbage and the exact spot (e.g. behind the bus-stop wall, next to the drain)...")
-        submitted = st.form_submit_button("Submit Review")
+        rating = st.slider("Cleanliness (1 = severe/filthy, 5 = clean)", 1, 5, default_rating)
+        description = st.text_area("Description", placeholder="Describe exact location, landmarks, and waste type...")
+        submitted = st.form_submit_button("Submit Incident Report")
 
         if submitted:
             has_point = st.session_state.clicked_lat is not None
@@ -1883,10 +1785,10 @@ else:
             in_cooldown = cooldown_elapsed is not None and cooldown_elapsed < SUBMISSION_COOLDOWN_SECONDS
 
             if not has_point and not has_segment:
-                st.error("Select a point, draw a segment, use your location, or search first.")
+                st.error("Select a target location on the map, draw a segment, or use GPS first.")
             elif in_cooldown:
                 wait_seconds = int(SUBMISSION_COOLDOWN_SECONDS - cooldown_elapsed)
-                st.error(f"Please wait {wait_seconds}s before submitting another report.")
+                st.error(f"Anti-spam protection: please wait {wait_seconds}s before submitting again.")
             else:
                 if has_segment:
                     points = st.session_state.segment_coords
@@ -1902,16 +1804,11 @@ else:
 
                 if duplicate:
                     st.warning(
-                        f"A similar '{category}' report already exists nearby "
-                        f"(\"{duplicate['location_name']}\"). Please upvote that one in the "
-                        "Community tab instead of creating a duplicate."
+                        f"Duplicate prevention: A '{category}' report already exists within 40m "
+                        f"('{duplicate['location_name']}'). Please upvote that report in the Community tab."
                     )
                 else:
-                    # Location name comes straight from the coordinates, not
-                    # free text - closes off the "type something nonsensical
-                    # as the location name" troll vector entirely.
                     derived_location_name = get_location_name(centroid_lat, centroid_lon)
-
                     pending_bytes = st.session_state.get("pending_photo_bytes")
                     photo_path = save_photo(pending_bytes, "review") if pending_bytes else None
 
@@ -1922,7 +1819,7 @@ else:
                         path_coords=path_json, photo_path=photo_path,
                     )
                     add_civic_points(st.session_state.current_user, 10)
-                    st.success("Report submitted. (+10 Civic Score)")
+                    st.success("Incident report successfully logged. (+10 Civic Score)")
 
                     for key in ("clicked_lat", "clicked_lon", "segment_coords", "_last_picker_raw", "_last_geo_raw"):
                         st.session_state[key] = defaults[key]
@@ -1930,25 +1827,19 @@ else:
                         st.session_state[key] = None
                     st.rerun()
 
-
 # --------------------------------------------------------------------------
-
-# --------------------------------------------------------------------------
-# MAIN AREA - HERO & TABS
+# MAIN APPLICATION WORKSPACE
 # --------------------------------------------------------------------------
 st.markdown(
     """
-    <div class="hero-banner">
-        <div class="hero-eyebrow">
-            <span class="eco-pill dark">🌿 SMART CIVIC SANITATION INFRASTRUCTURE</span>
-            <span style="font-family: 'Space Grotesk', monospace; font-size: 11.5px; color: #C7E66A; letter-spacing: 0.08em; display: inline-flex; align-items: center; gap: 6px;">
-                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#C7E66A; box-shadow:0 0 8px #C7E66A;"></span>
-                NODE: CLEANSPOT-CAM-01 ACTIVE
-            </span>
+    <div class="editorial-hero">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div class="editorial-tag">CIVIC OPERATIONS & ENVIRONMENTAL INTELLIGENCE</div>
+            <div style="font-size: 11px; font-weight: 600; color: #267348; background: #E7EDE4; padding: 2px 8px; border-radius: 4px;">SYSTEM OPERATIONAL · NODE ACTIVE</div>
         </div>
-        <h1>Spot it. Audit it. Resolve it.</h1>
-        <p>
-            Transforming urban waste blind spots into clean, accountable public spaces through community reporting, Gemini Multimodal AI vision triage, and autonomous cyber-physical edge sentinels.
+        <h1 class="editorial-title">Making every public space accountable.</h1>
+        <p class="editorial-desc">
+            From community-reported waste hotspots to AI-powered verification and intelligent edge monitoring, Civic-Bin helps communities turn neglected spaces into cleaner, accountable environments.
         </p>
     </div>
     """,
@@ -1957,19 +1848,18 @@ st.markdown(
 
 if not GOOGLE_MAPS_API_KEY:
     st.warning(
-        "No Google Maps API key found. Set the GOOGLE_MAPS_API_KEY environment variable and restart "
-        "to see the map (both the picker and heatmap views). (See the setup instructions at the top of clean_spot_app.py.)"
+        "Google Maps JavaScript API key not detected. Set the GOOGLE_MAPS_API_KEY environment variable to view interactive satellite maps and municipal heatmaps. Coordinate targeting and offline incident logging remain operational."
     )
 
 tab_overview, tab_map, tab_reviews, tab_news, tab_sentinel = st.tabs([
-    "🌿 Overview",
-    "🗺️ Geospatial Operations",
-    "👥 Community & Grievance SLA",
-    "📰 Sanitation News",
-    "🛡️ IoT Edge Sentinel",
+    "Overview",
+    "Geospatial Operations",
+    "Community & Grievance SLA",
+    "Sanitation News",
+    "IoT Edge Sentinel",
 ])
 
-# ----- TAB 1: EXECUTIVE OVERVIEW & LANDING EXPERIENCE -----------------------
+# ----- TAB 1: OVERVIEW -----------------------------------------------------
 with tab_overview:
     all_reviews_ov = fetch_all_reviews()
     total_reps = len(all_reviews_ov)
@@ -1979,163 +1869,110 @@ with tab_overview:
     avg_cleanliness = f"{all_reviews_ov['rating'].mean():.1f} / 5" if not all_reviews_ov.empty else "5.0 / 5"
     res_rate = f"{(fixed_reps / total_reps * 100):.0f}%" if total_reps > 0 else "0%"
 
-    # Top KPI metric cards
-    kpi1, kpi2, kpi3, kpi4, kpi5, kpi6 = st.columns(6)
-    with kpi1:
-        st.metric("Total Incidents", total_reps)
-    with kpi2:
-        st.metric("Open Hotspots", int(severe_open_reps))
-    with kpi3:
-        st.metric("Resolved Spots", int(fixed_reps))
-    with kpi4:
-        st.metric("Resolution Rate", res_rate)
-    with kpi5:
-        st.metric("Avg Cleanliness", avg_cleanliness)
-    with kpi6:
-        st.metric("Edge Sentinels", "1 Active")
-
-    st.markdown("---")
-
-    # Problem Statement & 4-Stage Ecosystem Visual
-    c_story, c_eco = st.columns([1.1, 1], gap="large")
-    with c_story:
-        st.markdown(
-            """
-            <div style="padding: 6px 0;">
-                <span class="eco-pill" style="margin-bottom: 12px;">The Municipal Blind-Spot Challenge</span>
-                <h2 style="font-size: 1.85rem; margin: 8px 0 14px 0; color: #14251B; line-height: 1.25;">
-                    From Unattended Waste Chaos to Science-Backed, Actionable Civic Resolution
-                </h2>
-                <p style="color: #4A5244; font-size: 1.02rem; line-height: 1.6; margin-bottom: 16px;">
-                    Traditional municipal complaint portals fail because citizens lack simple reporting tools, reports get lost in bureaucratic silos, and illegal dumping recurs in unattended neighbourhood blind spots.
-                </p>
-                <p style="color: #4A5244; font-size: 1.02rem; line-height: 1.6;">
-                    <b>Civic-Bin</b> bridges this gap with an end-to-end cyber-physical platform: deploying autonomous IoT edge sentinels for optical surveillance, multimodal Gemini AI vision for automated triage, and community-driven SLA accountability linked directly to Greater Chennai Corporation (GCC) grievance infrastructure.
-                </p>
+    # Responsive, non-truncating KPI Tile Grid
+    st.markdown(
+        f"""
+        <div class="kpi-row">
+            <div class="kpi-tile">
+                <div class="kpi-tile-label">Total Incidents</div>
+                <div class="kpi-tile-val">{total_reps}</div>
+                <div class="kpi-tile-sub">Logged in registry</div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        st.markdown(
-            """
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-                <div class="eco-card" style="flex: 1; min-width: 140px; padding: 12px 14px; text-align: center;">
-                    <div style="font-size: 1.4rem;">📸</div>
-                    <div style="font-weight: 700; color: #14251B; font-size: 13px; margin-top: 4px;">Citizen Capture</div>
-                    <div style="font-size: 11px; color: #777D73;">Mobile & Web Camera</div>
-                </div>
-                <div class="eco-card" style="flex: 1; min-width: 140px; padding: 12px 14px; text-align: center;">
-                    <div style="font-size: 1.4rem;">🧠</div>
-                    <div style="font-weight: 700; color: #14251B; font-size: 13px; margin-top: 4px;">Gemini Multimodal</div>
-                    <div style="font-size: 11px; color: #777D73;">AI Vision Classification</div>
-                </div>
-                <div class="eco-card" style="flex: 1; min-width: 140px; padding: 12px 14px; text-align: center;">
-                    <div style="font-size: 1.4rem;">🏛️</div>
-                    <div style="font-weight: 700; color: #14251B; font-size: 13px; margin-top: 4px;">Municipal Routing</div>
-                    <div style="font-size: 11px; color: #777D73;">GCC PGR Wording</div>
-                </div>
-                <div class="eco-card" style="flex: 1; min-width: 140px; padding: 12px 14px; text-align: center;">
-                    <div style="font-size: 1.4rem;">🛡️</div>
-                    <div style="font-weight: 700; color: #14251B; font-size: 13px; margin-top: 4px;">Edge Sentinel</div>
-                    <div style="font-size: 11px; color: #777D73;">ESP32-CAM 3MP Node</div>
-                </div>
+            <div class="kpi-tile">
+                <div class="kpi-tile-label">Open Hotspots</div>
+                <div class="kpi-tile-val warning">{severe_open_reps}</div>
+                <div class="kpi-tile-sub">Severity 1-2 stars</div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with c_eco:
-        st.markdown(
-            """
-            <div class="eco-card-dark" style="height: 100%;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                    <span class="eco-pill dark">CYBER-PHYSICAL ECOSYSTEM ARCHITECTURE</span>
-                    <span style="font-family: 'Space Grotesk', monospace; font-size: 11px; color: #C7E66A;">REV 1.0</span>
-                </div>
-                <h3 style="color: #FFFFFF; font-size: 1.45rem; margin: 0 0 14px 0;">4-Stage Civic Intelligence Loop</h3>
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 10px; border-left: 3px solid #C7E66A;">
-                        <b style="color: #C7E66A; font-size: 13px;">1. Optical Sourcing (Human & Node):</b>
-                        <div style="color: #D3DFCE; font-size: 12px; margin-top: 2px;">
-                            Citizens photograph street waste or CLEANSPOT-CAM-01 captures frames autonomously via local Wi-Fi.
-                        </div>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 10px; border-left: 3px solid #A7B99A;">
-                        <b style="color: #A7B99A; font-size: 13px;">2. Multimodal AI Vision Triage:</b>
-                        <div style="color: #D3DFCE; font-size: 12px; margin-top: 2px;">
-                            Gemini Flash Vision validates waste presence, suggests category, estimates severity (1-5), and screens synthetic AI images.
-                        </div>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 10px; border-left: 3px solid #315C3B;">
-                        <b style="color: #C7E66A; font-size: 13px;">3. Grievance Routing & SLA Enforcement:</b>
-                        <div style="color: #D3DFCE; font-size: 12px; margin-top: 2px;">
-                            Synthesizes official 400-char Greater Chennai Corporation (GCC) complaint text and starts a 7-day clean-up countdown clock.
-                        </div>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 10px; border-left: 3px solid #C7E66A;">
-                        <b style="color: #A7B99A; font-size: 13px;">4. Community Verification & Civic Score:</b>
-                        <div style="color: #D3DFCE; font-size: 12px; margin-top: 2px;">
-                            Neighbours upvote reports, discuss local solutions, and submit before/after clean-up photos to earn Civic Score points.
-                        </div>
-                    </div>
-                </div>
+            <div class="kpi-tile">
+                <div class="kpi-tile-label">Resolved Spots</div>
+                <div class="kpi-tile-val success">{fixed_reps}</div>
+                <div class="kpi-tile-sub">Verified cleanups</div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
+            <div class="kpi-tile">
+                <div class="kpi-tile-label">Resolution Rate</div>
+                <div class="kpi-tile-val">{res_rate}</div>
+                <div class="kpi-tile-sub">Community resolution</div>
+            </div>
+            <div class="kpi-tile">
+                <div class="kpi-tile-label">Cleanliness Index</div>
+                <div class="kpi-tile-val">{avg_cleanliness}</div>
+                <div class="kpi-tile-sub">District average</div>
+            </div>
+            <div class="kpi-tile">
+                <div class="kpi-tile-label">Active Sentinels</div>
+                <div class="kpi-tile-val accent">1 Online</div>
+                <div class="kpi-tile-sub">CLEANSPOT-CAM-01</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    st.markdown("---")
+    col_arch, col_ops = st.columns([1.1, 1], gap="medium")
 
-    # Category Breakdown & High-Priority Hotspots
-    col_chart, col_hotspots = st.columns([1, 1], gap="medium")
-    with col_chart:
-        st.markdown("### 📊 Real-time Incident Distribution by Category")
-        if not all_reviews_ov.empty and "category" in all_reviews_ov.columns:
-            cat_counts = all_reviews_ov["category"].value_counts().reset_index()
-            cat_counts.columns = ["Category", "Count"]
-            st.bar_chart(cat_counts.set_index("Category"), color="#315C3B")
-        else:
-            st.info("No incident records in the database yet.")
+    with col_arch:
+        with st.container(border=True):
+            st.markdown("#### Platform Architecture & Operational Loop")
+            st.markdown(
+                """
+                Civic-Bin integrates edge hardware, machine intelligence, and municipal routing into an unbroken accountability cycle:
+                """
+            )
+            st.markdown(
+                """
+                1. **Optical Sourcing & Surveillance:** Citizens photograph street waste via mobile/web capture, or the autonomous ESP32-CAM optical matrix records unattended dumping blind spots over local Wi-Fi.
+                2. **Multimodal AI Vision Triage:** Google Gemini Flash Vision analyzes scene imagery, validates waste presence, assigns categories, estimates severity (1–5), and screens synthetic images.
+                3. **Grievance Routing & 7-Day SLA:** Synthesizes structured 400-character complaint text aligned with Greater Chennai Corporation (GCC) PGR standards, initiating a public resolution countdown.
+                4. **Community Proof & Civic Score:** Neighbors verify cleanups with before-and-after photographic evidence, discuss corrective measures, and earn civic points.
+                """
+            )
 
-    with col_hotspots:
-        st.markdown("### 🚨 High-Priority Hotspots Under SLA")
-        if not all_reviews_ov.empty:
-            severe_df = all_reviews_ov[(all_reviews_ov["rating"] <= 2) & (all_reviews_ov["status"] == "Open")]
-            if not severe_df.empty:
-                for _, s_row in severe_df.head(3).iterrows():
-                    rep_dt = datetime.strptime(s_row["timestamp"], "%Y-%m-%d %H:%M:%S")
-                    d_elapsed = (datetime.now() - rep_dt).days
-                    days_left = max(0, SLA_DAYS - d_elapsed)
-                    with st.container(border=True):
-                        st.markdown(f"**Ticket #{s_row['id']} — {s_row['category']}** · Rating: `{int(s_row['rating'])}/5`")
-                        st.caption(f"📍 {s_row['location_name']} · Reported by: **{s_row['username']}**")
-                        if d_elapsed > SLA_DAYS:
-                            st.error(f"⚠️ SLA Breached: Overdue by {d_elapsed - SLA_DAYS} day(s)")
-                        else:
-                            st.info(f"⏳ {days_left} day(s) remaining in 7-day clean-up SLA")
+    with col_ops:
+        with st.container(border=True):
+            st.markdown("#### Real-time Category Distribution")
+            if not all_reviews_ov.empty and "category" in all_reviews_ov.columns:
+                cat_counts = all_reviews_ov["category"].value_counts().reset_index()
+                cat_counts.columns = ["Category", "Count"]
+                st.bar_chart(cat_counts.set_index("Category"), color="#183B2A", height=230)
             else:
-                st.success("🟢 No active severe hotspots! All severe reports have been resolved.")
+                st.info("No incident records logged in the database yet.")
+
+    # High-Priority Hotspots & Institutional Footer
+    st.markdown("#### High-Priority Hotspots Under Active SLA")
+    if not all_reviews_ov.empty:
+        severe_df = all_reviews_ov[(all_reviews_ov["rating"] <= 2) & (all_reviews_ov["status"] == "Open")]
+        if not severe_df.empty:
+            for _, s_row in severe_df.head(3).iterrows():
+                rep_dt = datetime.strptime(s_row["timestamp"], "%Y-%m-%d %H:%M:%S")
+                d_elapsed = (datetime.now() - rep_dt).days
+                days_left = max(0, SLA_DAYS - d_elapsed)
+                with st.container(border=True):
+                    col_t1, col_t2 = st.columns([3, 1])
+                    with col_t1:
+                        st.markdown(f"**Ticket #{s_row['id']} — {s_row['category']}** · Rating: `{int(s_row['rating'])}/5`")
+                        st.caption(f"Location: {s_row['location_name']} · Reported by: @{s_row['username']}")
+                        st.write(s_row['description'])
+                    with col_t2:
+                        if d_elapsed > SLA_DAYS:
+                            st.error(f"SLA Breached ({d_elapsed - SLA_DAYS}d overdue)")
+                        else:
+                            st.info(f"{days_left}d remaining in SLA")
         else:
-            st.caption("No reports filed yet.")
+            st.success("No active severe hotspots. All priority incidents are currently resolved.")
+    else:
+        st.caption("No reports registered yet.")
 
-    st.markdown("---")
-
-    # Institutional Review Footer
     st.markdown(
         """
-        <div style="background: #FFFFFF; border: 1px solid rgba(49, 92, 59, 0.16); border-radius: 14px; padding: 22px 28px; margin-top: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-                <div>
-                    <h4 style="margin: 0 0 6px 0; color: #14251B; font-family: 'Syne', sans-serif;">Civic-Bin · Design Thinking Review Project</h4>
-                    <p style="margin: 0; color: #777D73; font-size: 13px;">
-                        <b>Faculty Head:</b> Mr. Shakthivel &nbsp;|&nbsp; 
-                        <b>Development Team:</b> Sailesh M.V, Rakesh JP, Thishanth T, Tharun B
-                    </p>
+        <div style="background: #FFFFFF; border: 1px solid #E2E5DE; border-radius: 6px; padding: 14px 18px; margin-top: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div style="font-size: 12.5px; color: #68736B;">
+                    <b>Design Thinking Review Project</b> &nbsp;|&nbsp; 
+                    Faculty Head: <b>Mr. Shakthivel</b> &nbsp;|&nbsp; 
+                    Team: Sailesh M.V, Rakesh JP, Thishanth T, Tharun B
                 </div>
-                <div style="font-family: 'Space Grotesk', monospace; font-size: 12px; color: #315C3B; text-align: right;">
-                    <span>GCC PGR Gateway Active</span><br>
-                    <span style="color: #777D73;">ESP32-CAM Node: 192.168.0.108</span>
+                <div style="font-size: 11.5px; color: #68736B;">
+                    Municipal Gateway: GCC PGR &nbsp;·&nbsp; Edge Node: 192.168.0.108
                 </div>
             </div>
         </div>
@@ -2143,28 +1980,40 @@ with tab_overview:
         unsafe_allow_html=True,
     )
 
-# ----- TAB 1: MAP (interactive picker + heatmap, toggle between them) -------
+# ----- TAB 2: GEOSPATIAL OPERATIONS ----------------------------------------
 with tab_map:
     reviews_df = fetch_all_reviews()
 
+    st.markdown("### Geospatial Incident Operations")
+    st.caption("Interactive incident map, municipal heatmaps, and boundary outline tools.")
+
     view_choice = st.radio(
-        "View", ["Map (click / draw to report)", "Heatmap (open vs. cleaned)"],
+        "View mode", ["Interactive Incident Map", "Municipal Heatmap (Open vs. Cleaned)"],
         horizontal=True, label_visibility="collapsed",
     )
-    is_heatmap_view = view_choice.startswith("Heatmap")
+    is_heatmap_view = view_choice.startswith("Municipal Heatmap")
 
-    col_map, col_stats = st.columns([3, 1])
+    col_map, col_stats = st.columns([3, 1], gap="medium")
 
     with col_stats:
-        st.metric("Total Reports", len(reviews_df))
-        if not reviews_df.empty:
-            st.metric("Average Cleanliness", f"{reviews_df['rating'].mean():.1f} / 5")
-            open_severe = ((reviews_df["rating"] <= 2) & (reviews_df["status"] == "Open")).sum()
-            st.metric("Open Hotspots (2 stars or less)", int(open_severe))
-        if is_heatmap_view:
-            st.caption("Red = still open &nbsp; Green = cleaned up.")
-        else:
-            st.caption("Use the Draw Segment button (top-right of the map) to outline a stretch (an alley or lane) with garbage.")
+        with st.container(border=True):
+            st.markdown("##### District Summary")
+            st.metric("Total Incident Markers", len(reviews_df))
+            if not reviews_df.empty:
+                st.metric("Cleanliness Index", f"{reviews_df['rating'].mean():.1f} / 5")
+                open_severe = ((reviews_df["rating"] <= 2) & (reviews_df["status"] == "Open")).sum()
+                st.metric("Priority Hotspots", int(open_severe))
+
+            st.markdown("---")
+            st.markdown("##### Status Legend")
+            st.markdown(
+                """
+                • <span style="color:#B54740; font-weight:600;">Severe / Critical</span> (1-2★)  
+                • <span style="color:#A66B17; font-weight:600;">Moderate Waste</span> (3★)  
+                • <span style="color:#267348; font-weight:600;">Clean / Resolved</span> (4-5★)
+                """,
+                unsafe_allow_html=True,
+            )
 
     with col_map:
         if GOOGLE_MAPS_API_KEY:
@@ -2204,85 +2053,51 @@ with tab_map:
                         st.session_state.clicked_lat = None
                         st.session_state.clicked_lon = None
         else:
-            st.info("Map unavailable - add a Google Maps API key (see the warning above).")
+            with st.container(border=True):
+                st.markdown("##### Offline Map Workspace")
+                st.caption(
+                    "Google Maps API key not configured. Satellite map rendering is paused. Coordinate targeting, reverse geocoding via OpenStreetMap, and database incident logging remain fully active."
+                )
 
-    if not is_heatmap_view:
-        st.markdown(
-            "**Legend:** Red = 1-2 stars (Severe / hazardous) &nbsp;&nbsp; Orange = 3 stars (Moderate) "
-            "&nbsp;&nbsp; Green = 4-5 stars (Clean, incl. cleaned up)"
-        )
-
-# ----- TAB 3: COMMUNITY (all reviews, upvotes, replies, fixes) -------------
+# ----- TAB 3: COMMUNITY & GRIEVANCE SLA ------------------------------------
 with tab_reviews:
-    st.markdown(
-        """
-        <div style="background: #FFFFFF; border: 1px solid rgba(49, 92, 59, 0.16); border-radius: 14px; padding: 22px 28px; margin-bottom: 20px; box-shadow: 0 4px 18px rgba(20, 37, 27, 0.04);">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <div>
-                    <span class="eco-pill" style="margin-bottom: 6px;">COMMUNITY GRIEVANCE TRACKER</span>
-                    <h2 style="font-family: 'Syne', sans-serif; color: #14251B; margin: 2px 0 4px 0;">Public Incidents & Grievance SLA</h2>
-                    <p style="color: #777D73; font-size: 13.5px; margin: 0;">Verified citizen and autonomous sentinel incident logs with photographic proof, municipal routing, and 7-day clean-up countdowns.</p>
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown("### Community Incident Registry & Grievance SLA")
+    st.caption("Citizen-reported incidents, official municipal complaint pre-fill, SLA clocks, and clean-up verification.")
 
     all_reviews = fetch_all_reviews()
 
     if all_reviews.empty:
-        st.info("No reports yet - sign in and submit one from the sidebar!")
+        st.info("No incident reports recorded in the registry yet. Submit a report from the sidebar.")
     else:
         for _, row in all_reviews.iterrows():
             review_id = int(row["id"])
-            is_segment = isinstance(row["path_coords"], str)  # see note in reviews_to_payload re: NaN truthiness
-            location_kind = "" if is_segment else ""
-            status_pill = "🟢 CLEANED" if row["status"] == "Fixed" else "🔴 OPEN"
+            status_badge = "CLEANED" if row["status"] == "Fixed" else "OPEN HOTSPOT"
+            badge_class = "badge-fixed" if row["status"] == "Fixed" else "badge-open"
             stars = "★" * int(row["rating"]) + "☆" * (5 - int(row["rating"]))
             ticket_id = f"GR-{review_id:04d}"
 
-            with st.expander(
-                f"{ticket_id} · {status_pill} · {row['location_name']} · {stars}"
-            ):
-                st.caption(f"{row['category']} · reported by **{row['username']}**")
+            with st.expander(f"{ticket_id} · [{status_badge}] · {row['location_name']} · ({stars})"):
+                st.caption(f"Category: {row['category']} · Reported by: @{row['username']} · Timestamp: {row['timestamp']}")
                 st.write(safe_str(row["description"], "_No description provided._"))
 
                 if row["status"] == "Open" and int(row["rating"]) <= 2:
                     reported_dt = datetime.strptime(row["timestamp"], "%Y-%m-%d %H:%M:%S")
                     days_elapsed = (datetime.now() - reported_dt).days
                     if days_elapsed > SLA_DAYS:
-                        st.error(f"SLA breached - reported {days_elapsed} days ago (public {SLA_DAYS}-day clean-up limit)")
+                        st.error(f"SLA Breached: Overdue by {days_elapsed - SLA_DAYS} days past the public {SLA_DAYS}-day clean-up limit.")
                     else:
-                        st.info(f"{SLA_DAYS - days_elapsed} day(s) remaining under the {SLA_DAYS}-day clean-up SLA")
+                        st.info(f"{SLA_DAYS - days_elapsed} day(s) remaining in the public {SLA_DAYS}-day resolution window.")
 
-                # --- File with the citizen's actual local municipal office ---
+                # Municipal Grievance Routing
                 if row["status"] == "Open":
-                    with st.expander("File this with your local municipal office"):
+                    with st.expander("File with Municipal Office (Greater Chennai Corporation)"):
                         municipality_info, is_known_portal = get_municipality_info(row)
-                        st.write(f"**Reporting to:** {municipality_info['name']}")
-
-                        if is_known_portal:
-                            st.caption(
-                                "This is a real public complaints system. It requires your own mobile "
-                                "number + OTP to submit, so we can't file this for you - but everything "
-                                "below is pre-formatted to paste straight in."
-                            )
-                        else:
-                            st.caption(
-                                "We don't have this municipality's exact portal on file yet, so here's a "
-                                "search link to find it, plus a generic complaint you can adapt to whatever "
-                                "form it uses."
-                            )
+                        st.write(f"**Target Authority:** {municipality_info['name']}")
 
                         civic = build_civic_complaint(row, municipality_info, is_known_portal)
-                        st.write(f"**Complaint Category:** {civic['group']}")
-                        st.write(f"**Complaint Type:** {civic['type']}")
-                        st.write("**Complaint Title:**")
+                        st.write(f"**Group:** {civic['group']} &nbsp;|&nbsp; **Type:** {civic['type']}")
                         st.code(civic["title"], language=None)
 
-                        # An AI-polished version is optional and session-only - we
-                        # never overwrite the DB, just what's displayed here.
                         polish_key = f"ai_polished_{review_id}"
                         if st.button("Improve wording with AI", key=f"ai_polish_btn_{review_id}"):
                             polished, ai_error = polish_complaint_with_ai(
@@ -2294,82 +2109,75 @@ with tab_reviews:
                                 st.session_state[polish_key] = polished
 
                         details_to_show = st.session_state.get(polish_key, civic["details"])
-                        st.write(f"**Details of Complaint** ({len(details_to_show)}/{GCC_DETAILS_MAX_CHARS} chars):")
+                        st.write(f"**Details of Complaint ({len(details_to_show)}/{GCC_DETAILS_MAX_CHARS} chars):**")
                         st.code(details_to_show, language=None)
-                        if polish_key in st.session_state:
-                            st.caption("AI-polished wording shown above. This isn't saved - re-generate anytime.")
 
                         if row["photo_path"] and isinstance(row["photo_path"], str):
-                            st.caption("Attach the photo below when you upload it on the portal:")
+                            st.caption("Attached Incident Photograph:")
                             safe_image(row["photo_path"], width=200)
 
-                        button_label = "Open Complaint Portal " if is_known_portal else "Search for Local Portal "
+                        button_label = "Open GCC Complaint Portal ↗" if is_known_portal else "Search Local Municipal Portal ↗"
                         st.link_button(button_label, municipality_info["url"])
 
                 col_up, _ = st.columns([1, 5])
                 with col_up:
                     if st.session_state.current_user is None:
-                        st.caption(f"{row['upvote_count']} · sign in to upvote")
+                        st.caption(f"▲ {row['upvote_count']} upvotes (sign in to vote)")
                     elif has_upvoted(review_id, st.session_state.current_user):
-                        st.caption(f"{row['upvote_count']} · you upvoted this")
+                        st.caption(f"▲ {row['upvote_count']} upvotes (you upvoted)")
                     else:
-                        if st.button(f"{row['upvote_count']}", key=f"rev_upvote_{review_id}"):
+                        if st.button(f"▲ Upvote ({row['upvote_count']})", key=f"rev_upvote_{review_id}"):
                             if upvote_review(review_id, st.session_state.current_user):
                                 add_civic_points(st.session_state.current_user, 1)
                             st.rerun()
 
                 if row["status"] == "Open":
                     st.markdown("---")
-                    st.markdown("**Mark as Cleaned**")
+                    st.markdown("**Verify & Mark as Cleaned**")
                     if isinstance(row["photo_path"], str):
-                        safe_image(row["photo_path"], caption="Reported photo", width=250)
+                        safe_image(row["photo_path"], caption="Reported condition", width=240)
                     if st.session_state.current_user is None:
-                        st.caption("Sign in to mark this spot as cleaned.")
+                        st.caption("Sign in to submit clean-up verification proof.")
                     else:
                         fixed_photo_method = st.radio(
-                            "After-photo method", ["Take a live photo", "Upload from device"],
+                            "Proof photo method", ["Take a live photo", "Upload from device"],
                             horizontal=True, label_visibility="collapsed", key=f"fixed_photo_method_{review_id}",
                         )
                         if fixed_photo_method.startswith("Take a live"):
-                            fixed_photo = st.camera_input(
-                                "Take an after-clean-up photo (optional)", key=f"fixed_photo_camera_{review_id}",
-                            )
+                            fixed_photo = st.camera_input("Take clean-up photo", key=f"fixed_photo_camera_{review_id}")
                         else:
-                            fixed_photo = st.file_uploader(
-                                "Upload an after-clean-up photo (optional)", type=["jpg", "jpeg", "png"],
-                                key=f"fixed_photo_upload_{review_id}",
-                            )
-                        new_rating = st.slider("New cleanliness rating after clean-up", 1, 5, 5, key=f"fixed_rating_{review_id}")
+                            fixed_photo = st.file_uploader("Upload clean-up photo", type=["jpg", "jpeg", "png"], key=f"fixed_photo_upload_{review_id}")
+                        new_rating = st.slider("Verified cleanliness rating", 1, 5, 5, key=f"fixed_rating_{review_id}")
                         if st.button("Confirm Cleaned", key=f"confirm_fixed_{review_id}"):
                             fixed_path = save_photo(fixed_photo.getvalue(), f"fixed_{review_id}") if fixed_photo else None
                             mark_review_fixed(review_id, new_rating, fixed_path)
                             add_civic_points(st.session_state.current_user, 15)
                             st.rerun()
                 else:
-                    st.success("This spot has been marked CLEANED by the community.")
-                    col_before, col_after = st.columns(2)
-                    with col_before:
+                    st.success("This location has been verified and marked CLEANED by the community.")
+                    col_b, col_a = st.columns(2)
+                    with col_b:
                         if isinstance(row["photo_path"], str):
                             safe_image(row["photo_path"], caption="Before")
-                    with col_after:
+                    with col_a:
                         if isinstance(row["fixed_photo_path"], str):
-                            safe_image(row["fixed_photo_path"], caption="After")
+                            safe_image(row["fixed_photo_path"], caption="After Clean-Up")
 
                 st.markdown("---")
-                st.markdown("**Replies:**")
+                st.markdown("**Community Discussion:**")
                 replies = fetch_replies(review_id)
                 if replies.empty:
-                    st.caption("No replies yet - be the first to respond.")
+                    st.caption("No replies posted yet.")
                 else:
                     for _, reply in replies.iterrows():
-                        st.markdown(f"**{reply['username']}:** {reply['reply_text']}")
-                        st.caption(reply["timestamp"])
+                        st.markdown(f"**@{reply['username']}:** {reply['reply_text']}")
+                        st.caption(f"Posted {reply['timestamp']}")
 
                 if st.session_state.current_user is None:
-                    st.caption("Sign in to reply.")
+                    st.caption("Sign in to post a reply.")
                 else:
                     with st.form(f"reply_form_{review_id}", clear_on_submit=True):
-                        reply_text = st.text_input("Add a reply", key=f"reply_input_{review_id}")
+                        reply_text = st.text_input("Add a comment", key=f"reply_input_{review_id}")
                         reply_submitted = st.form_submit_button("Post Reply")
                         if reply_submitted:
                             if reply_text.strip():
@@ -2377,36 +2185,22 @@ with tab_reviews:
                                 add_civic_points(st.session_state.current_user, 2)
                                 st.rerun()
                             else:
-                                st.warning("Reply can't be empty.")
+                                st.warning("Reply cannot be empty.")
 
-# ----- TAB 4: News (community news feed) ----------------------------
+# ----- TAB 4: SANITATION NEWS ----------------------------------------------
 with tab_news:
-    st.markdown(
-        """
-        <div style="background: #FFFFFF; border: 1px solid rgba(49, 92, 59, 0.16); border-radius: 14px; padding: 24px 28px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 18px rgba(20, 37, 27, 0.04);">
-            <span class="eco-pill" style="margin-bottom: 8px;">SANITATION & ENVIRONMENTAL DISPATCH</span>
-            <h1 style="font-family: 'Syne', sans-serif; font-size: 2.2rem; color: #14251B; margin: 4px 0 6px 0; letter-spacing: -0.02em;">Civic Environmental News</h1>
-            <p style="color: #777D73; font-size: 13.5px; margin: 0; max-width: 600px; margin: auto;">Real-time coverage on solid waste management, illegal dumping blind spots, and public sanitation infrastructure powered by Google News RSS.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.caption(
-        "Real news coverage of garbage and sanitation problems, pulled from Google News. "
-        "Sorted newest first - upvotes show community trust, but never bump an article out of order."
-    )
+    st.markdown("### Environmental & Sanitation Dispatch")
+    st.caption("Public coverage on municipal waste management, illegal dumping, and civic public health via Google News RSS.")
 
-    news_query = st.text_input(
-        "Search topic", value="Chennai garbage dumping OR waste management", key="news_search_query"
-    )
-    if st.button("Fetch Latest Headlines"):
+    news_query = st.text_input("Search topic", value="Chennai garbage dumping OR waste management", key="news_search_query")
+    if st.button("Fetch Latest Coverage"):
         fetched = fetch_news_rss(news_query.strip())
         if fetched:
             store_news_items(fetched, news_query.strip())
-            st.session_state.news_page = 1  # jump back to page 1 on a fresh fetch
-            st.success(f"Fetched {len(fetched)} articles.")
+            st.session_state.news_page = 1
+            st.success(f"Retrieved {len(fetched)} articles.")
         else:
-            st.warning("No articles found, or the request failed - try a different search topic.")
+            st.warning("No articles found for that topic.")
         st.rerun()
 
     if "news_page" not in st.session_state:
@@ -2414,17 +2208,14 @@ with tab_news:
     if "_last_shown_news_query" not in st.session_state:
         st.session_state._last_shown_news_query = None
     if st.session_state._last_shown_news_query != news_query.strip():
-        # The search box changed since the last render - reset to page 1
-        # rather than potentially landing on an out-of-range page for a
-        # topic with fewer results than the last one.
         st.session_state.news_page = 1
         st.session_state._last_shown_news_query = news_query.strip()
 
-    PAGE_SIZE = 10
+    PAGE_SIZE = 8
     all_news = fetch_news_for_query(news_query.strip())
 
     if all_news.empty:
-        st.info("No headlines for this topic yet - click 'Fetch Latest Headlines' above to pull some in.")
+        st.info("No articles currently loaded. Click 'Fetch Latest Coverage' above.")
     else:
         total_pages = max(1, (len(all_news) + PAGE_SIZE - 1) // PAGE_SIZE)
         st.session_state.news_page = min(st.session_state.news_page, total_pages)
@@ -2436,175 +2227,161 @@ with tab_news:
         for _, item in page_items.iterrows():
             news_id = int(item["id"])
             with st.container(border=True):
-                st.markdown(f'<div class="feed-article"><b>{item["title"]}</b></div>', unsafe_allow_html=True)
+                st.markdown(f"**{item['title']}**")
                 st.caption(f"{item['source']} · {item['published']}")
-                st.link_button("Read article ", item["link"])
+                st.link_button("Read Article ↗", item["link"])
 
                 if st.session_state.current_user is None:
-                    st.caption(f"{item['upvote_count']} · sign in to upvote")
+                    st.caption(f"▲ {item['upvote_count']} upvotes")
                 elif has_upvoted_news(news_id, st.session_state.current_user):
-                    st.caption(f"{item['upvote_count']} · you upvoted this")
+                    st.caption(f"▲ {item['upvote_count']} upvotes (you upvoted)")
                 else:
-                    if st.button(f"{item['upvote_count']}", key=f"news_upvote_{news_id}"):
+                    if st.button(f"▲ Upvote ({item['upvote_count']})", key=f"news_upvote_{news_id}"):
                         if upvote_news(news_id, st.session_state.current_user):
                             add_civic_points(st.session_state.current_user, 1)
                         st.rerun()
 
         col_prev, col_info, col_next = st.columns([1, 2, 1])
         with col_prev:
-            if st.button("Prev", disabled=(page <= 1)):
+            if st.button("Previous Page", disabled=(page <= 1)):
                 st.session_state.news_page -= 1
                 st.rerun()
         with col_info:
-            st.markdown(
-                f"<div style='text-align:center; padding-top:6px;'>Page {page} of {total_pages} "
-                f"({len(all_news)} articles)</div>",
-                unsafe_allow_html=True,
-            )
+            st.markdown(f"<div style='text-align:center; padding-top:8px; font-size:12px; color:#68736B;'>Page {page} of {total_pages}</div>", unsafe_allow_html=True)
         with col_next:
-            if st.button("Next ", disabled=(page >= total_pages)):
+            if st.button("Next Page", disabled=(page >= total_pages)):
                 st.session_state.news_page += 1
                 st.rerun()
 
-# ==============================================================================
-# TAB 4: AUTONOMOUS IOT EDGE SENTINEL (CLEANSPOT-CAM-01)
-# ==============================================================================
+# ----- TAB 5: IOT EDGE SENTINEL CONSOLE ------------------------------------
 with tab_sentinel:
-    st.markdown(
-        """
-        <div style="background: linear-gradient(135deg, #14251B 0%, #1D3625 100%); border: 1px solid rgba(167, 185, 154, 0.25); border-radius: 16px; padding: 24px 28px; color: #F5F4ED; margin-bottom: 22px; box-shadow: 0 8px 28px rgba(20, 37, 27, 0.14);">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
-                <span class="eco-pill dark">🛡️ CYBER-PHYSICAL EDGE VISION NODE</span>
-                <span style="font-family: 'Space Grotesk', monospace; font-size: 11px; color: #C7E66A;">HARDWARE: ESP32-CAM (OV3660 3MP)</span>
-            </div>
-            <h1 style="font-family: 'Syne', sans-serif; font-size: 2.2rem; color: #FFFFFF; margin: 4px 0 8px 0; letter-spacing: -0.02em;">Autonomous IoT Edge Sentinel</h1>
-            <p style="color: #D3DFCE; font-size: 14px; margin: 0; max-width: 780px;">
-                Automated blind-spot optical surveillance node with 1W hardware spotlight, edge Wi-Fi server, Gemini Multimodal AI vision triage, and direct Greater Chennai Corporation (GCC) grievance escalation.
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown("### IoT Edge Sentinel Console · Node CLEANSPOT-CAM-01")
+    st.caption("Autonomous blind-spot optical surveillance node, hardware spotlight, and automated municipal grievance triage.")
 
     col_cam, col_ai = st.columns([1, 1], gap="medium")
-
     sentinel_ip = st.session_state.get("iot_cam_url", "http://192.168.0.108/capture")
 
     with col_cam:
-        st.markdown("### 📡 Live Edge Node Viewfinder")
-        st.caption("Hardware: **ESP32-CAM 3MP Optical Matrix** · Node ID: `CLEANSPOT-CAM-01`")
+        with st.container(border=True):
+            st.markdown("##### Live Node Optical Viewfinder")
+            st.caption("Hardware: **AI-Thinker ESP32-CAM (OV3660 3MP)**")
 
-        if st.session_state.get("sentinel_last_img") is not None:
-            st.image(st.session_state.sentinel_last_img, caption="Live Frame from CLEANSPOT-CAM-01", use_container_width=True)
-        else:
-            st.info("No frame captured yet. Click below to grab a live frame from your desk camera.")
+            if st.session_state.get("sentinel_last_img") is not None:
+                st.image(st.session_state.sentinel_last_img, caption="Live Frame Capture (CLEANSPOT-CAM-01)", use_container_width=True)
+            else:
+                st.info("No optical frame retrieved yet. Click below to grab live frame.")
 
-        btn_c1, btn_c2 = st.columns(2)
-        with btn_c1:
-            if st.button("📸 Grab Live Frame", use_container_width=True):
-                try:
-                    import urllib.request
-                    with st.spinner("Connecting to ESP32-CAM..."):
-                        req = urllib.request.Request(sentinel_ip, headers={"User-Agent": "CleanSpot-Web/1.0"})
-                        with urllib.request.urlopen(req, timeout=6) as response:
-                            img_data = response.read()
-                            if img_data:
-                                st.session_state.sentinel_last_img = img_data
-                                st.success("Frame retrieved successfully!")
-                                st.rerun()
-                except Exception as e:
-                    st.error(f"Could not reach camera node at {sentinel_ip}: {e}")
-        with btn_c2:
-            st.link_button("🌐 Open Node Web Server", "http://192.168.0.108", use_container_width=True)
+            btn_c1, btn_c2 = st.columns(2)
+            with btn_c1:
+                if st.button("Grab Live Frame", use_container_width=True):
+                    try:
+                        import urllib.request
+                        with st.spinner("Connecting to ESP32-CAM..."):
+                            req = urllib.request.Request(sentinel_ip, headers={"User-Agent": "CleanSpot-Web/1.0"})
+                            with urllib.request.urlopen(req, timeout=6) as response:
+                                img_data = response.read()
+                                if img_data:
+                                    st.session_state.sentinel_last_img = img_data
+                                    st.success("Frame retrieved successfully.")
+                                    st.rerun()
+                    except Exception as e:
+                        st.error(f"Cannot reach camera node at {sentinel_ip}: {e}")
+            with btn_c2:
+                st.link_button("Open Node Server ↗", "http://192.168.0.108", use_container_width=True)
 
         with st.container(border=True):
-            st.markdown("#### ⚙️ Edge Telemetry Stream")
+            st.markdown("##### Edge Telemetry Stream")
             st.markdown(
-                "• **Operational Status:** 🟢 `ARMED & MONITORING`  \n"
-                "• **Node Coordinates:** `13.0827° N, 80.2707° E` (Chennai Central Hotspot)  \n"
-                "• **Night Vision Spotlight:** `Ready (1W White SMD Flash)`  \n"
-                "• **Surveillance Domain:** Unattended Neighborhood Blind Spot"
+                """
+                • **Status:** Armed & Monitoring  
+                • **Coordinates:** 13.0827° N, 80.2707° E (Chennai Central)  
+                • **Optics:** OV3660 3MP Sensor · QVGA (320x240)  
+                • **Memory Mode:** Internal DRAM (PSRAM Disabled)  
+                • **Night Spotlight:** 1W White SMD Flash (GPIO 4)  
+                • **Network Interface:** Local Wi-Fi HTTP Server (:80)
+                """
             )
 
     with col_ai:
-        st.markdown("### 🤖 Autonomous AI Grievance Engine")
-        st.caption("Evaluates live camera frames, filters false alarms, and autonomously registers municipal tickets.")
+        with st.container(border=True):
+            st.markdown("##### Autonomous AI Grievance Pipeline")
+            st.caption("Evaluates captured frames, filters false alarms, and autonomously logs validated municipal grievances.")
 
-        st.markdown(
-            "When triggered, the Sentinel executes our 3-stage cyber-physical triage pipeline:  \n"
-            "**1. Optical Capture** ➔ **2. Gemini Vision Triage** ➔ **3. Auto-Filing in Civic-Bin DB & GCC Routing**"
-        )
+            st.markdown(
+                """
+                **3-Stage Autonomous Triage Workflow:**  
+                1. Hardware Spotlight & Optical Capture  
+                2. Gemini Multimodal AI Vision Inspection  
+                3. Automatic Grievance Registration in Civic-Bin DB & GCC Routing
+                """
+            )
 
-        if st.button("⚡ EXECUTE AUTONOMOUS SURVEILLANCE AUDIT", type="primary", use_container_width=True):
-            try:
-                import urllib.request
-                import uuid
-                with st.status("Executing Autonomous Sentinel Pipeline...", expanded=True) as status_box:
-                    st.write("📡 [1/3] Triggering hardware spotlight & capturing optical frame from ESP32-CAM...")
-                    req = urllib.request.Request(sentinel_ip, headers={"User-Agent": "CleanSpot-Web/1.0"})
-                    with urllib.request.urlopen(req, timeout=8) as response:
-                        frame_bytes = response.read()
+            if st.button("Execute Autonomous Surveillance Audit", type="primary", use_container_width=True):
+                try:
+                    import urllib.request
+                    import uuid
+                    with st.status("Executing Autonomous Surveillance Audit...", expanded=True) as status_box:
+                        st.write("Triggering hardware spotlight & capturing optical frame from ESP32-CAM...")
+                        req = urllib.request.Request(sentinel_ip, headers={"User-Agent": "CleanSpot-Web/1.0"})
+                        with urllib.request.urlopen(req, timeout=8) as response:
+                            frame_bytes = response.read()
 
-                    st.session_state.sentinel_last_img = frame_bytes
+                        st.session_state.sentinel_last_img = frame_bytes
 
-                    st.write("🧠 [2/3] Passing frame to Gemini Multimodal AI Vision Engine...")
-                    result, ai_error = analyze_garbage_photo(frame_bytes, "image/jpeg")
+                        st.write("Evaluating frame with Gemini Multimodal AI Vision...")
+                        result, ai_error = analyze_garbage_photo(frame_bytes, "image/jpeg")
 
-                    if ai_error:
-                        status_box.update(label="AI Inspection Failed", state="error")
-                        st.error(ai_error)
-                    elif not result.get("is_garbage_issue"):
-                        status_box.update(label="Scene Clear — No Waste Detected", state="complete")
-                        st.info(f"🟢 **No Waste Violation:** {result.get('explanation')}")
-                        st.caption("AI successfully filtered false alarm. No duplicate or junk ticket submitted to municipal queue.")
-                    else:
-                        st.write("🏛️ [3/3] Waste confirmed! Auto-registering ticket in Civic-Bin DB & synthesizing GCC complaint...")
-                        filename = f"sentinel_{uuid.uuid4().hex[:8]}.jpg"
-                        filepath = os.path.join(UPLOAD_DIR, filename)
-                        with open(filepath, "wb") as f:
-                            f.write(frame_bytes)
+                        if ai_error:
+                            status_box.update(label="AI Inspection Failed", state="error")
+                            st.error(ai_error)
+                        elif not result.get("is_garbage_issue"):
+                            status_box.update(label="Scene Clear — No Waste Detected", state="complete")
+                            st.info(f"No Waste Detected: {result.get('explanation')}")
+                            st.caption("AI filtered false alarm. No ticket logged to municipal queue.")
+                        else:
+                            st.write("Waste verified! Auto-registering ticket in Civic-Bin DB...")
+                            filename = f"sentinel_{uuid.uuid4().hex[:8]}.jpg"
+                            filepath = os.path.join(UPLOAD_DIR, filename)
+                            with open(filepath, "wb") as f:
+                                f.write(frame_bytes)
 
-                        cat = result.get("category") or "General Litter"
-                        sev = result.get("severity") or "Severe"
-                        rating_score = SEVERITY_TO_RATING.get(sev, 2)
-                        desc = f"[AUTONOMOUS SENTINEL DETECTION] {result.get('explanation')}"
-                        loc_name = "Chennai Central Hotspot 01"
+                            cat = result.get("category") or "Illegal Dumping"
+                            sev = result.get("severity") or "Severe"
+                            rating_score = SEVERITY_TO_RATING.get(sev, 2)
+                            desc = f"[AUTONOMOUS SENTINEL DETECTION] {result.get('explanation')}"
+                            loc_name = "Chennai Central Hotspot 01"
 
-                        insert_review(
-                            lat=13.0827,
-                            lon=80.2707,
-                            location_name=loc_name,
-                            rating=rating_score,
-                            category=cat,
-                            description=desc,
-                            username="CLEANSPOT-SENTINEL-01",
-                            path_coords=None,
-                            photo_path=filepath
-                        )
+                            insert_review(
+                                lat=13.0827,
+                                lon=80.2707,
+                                location_name=loc_name,
+                                rating=rating_score,
+                                category=cat,
+                                description=desc,
+                                username="CLEANSPOT-SENTINEL-01",
+                                path_coords=None,
+                                photo_path=filepath
+                            )
 
-                        status_box.update(label="🚨 Illegal Dumping Confirmed! Ticket Auto-Filed!", state="complete")
-                        st.success(f"**Ticket Auto-Filed Successfully!**")
-                        st.markdown(f"• **Category:** `{cat}`  \n• **Severity Level:** `{sev}` (Rating: `{rating_score}/5`)  \n• **Reporter:** `CLEANSPOT-SENTINEL-01`")
-                        st.markdown(f"• **AI Explanation:** *{result.get('explanation')}*")
-                        st.caption("The new ticket has been plotted on the live map and added to the public clean-up countdown clock.")
-                        st.rerun()
+                            status_box.update(label="Waste Confirmed — Ticket Auto-Filed!", state="complete")
+                            st.success("Ticket Auto-Filed Successfully.")
+                            st.markdown(f"• **Category:** `{cat}` · **Severity:** `{sev}` (`{rating_score}/5`)\\n• **AI Reason:** *{result.get('explanation')}*")
+                            st.rerun()
 
-            except Exception as e:
-                st.error(f"Autonomous audit error: {e}")
+                except Exception as e:
+                    st.error(f"Audit pipeline error: {e}")
 
-        st.markdown("---")
-        st.markdown("#### 📋 Recent Sentinel Auto-Registered Tickets")
-        all_reps = fetch_all_reviews()
-        if not all_reps.empty and "username" in all_reps.columns:
-            sentinel_reps = all_reps[all_reps["username"] == "CLEANSPOT-SENTINEL-01"]
-            if not sentinel_reps.empty:
-                for _, r in sentinel_reps.tail(3).iloc[::-1].iterrows():
-                    with st.container(border=True):
-                        st.markdown(f"**Ticket #{r['id']} — {r['category']}** (Severity: {r['rating']}/5)")
-                        st.caption(f"📍 {r['location_name']} · Timestamp: {r['timestamp']}")
+        with st.container(border=True):
+            st.markdown("##### Recent Sentinel Auto-Registered Tickets")
+            all_reps = fetch_all_reviews()
+            if not all_reps.empty and "username" in all_reps.columns:
+                sentinel_reps = all_reps[all_reps["username"] == "CLEANSPOT-SENTINEL-01"]
+                if not sentinel_reps.empty:
+                    for _, r in sentinel_reps.tail(3).iloc[::-1].iterrows():
+                        st.markdown(f"**Ticket #{r['id']} — {r['category']}** ({r['rating']}/5)")
+                        st.caption(f"📍 {r['location_name']} · {r['timestamp']}")
                         st.write(r['description'])
+                else:
+                    st.caption("No autonomous tickets logged yet. Execute an audit above.")
             else:
-                st.caption("No autonomous tickets filed yet. Run an audit on a garbage sample above!")
-        else:
-            st.caption("No reports registered yet.")
-
+                st.caption("No reports registered yet.")
