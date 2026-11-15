@@ -216,8 +216,13 @@ st.markdown(
         color: #202923 !important;
     }
 
-    /* Universal Text Color Guard */
-    .stApp p, .stApp span, .stApp div, .stApp li, .stApp td, .stApp th {
+    /* Universal Text Color Guard (strictly exclude button contents, alerts, selected tabs, badges) */
+    .stApp p:not(button *):not([data-testid="stAlert"] *):not([aria-selected="true"] *):not(.badge-open):not(.badge-fixed):not(.volunteer-card-badge):not(.drive-status-scheduled):not(.drive-status-completed),
+    .stApp span:not(button *):not([data-testid="stAlert"] *):not([aria-selected="true"] *):not(.badge-open):not(.badge-fixed):not(.volunteer-card-badge):not(.drive-status-scheduled):not(.drive-status-completed),
+    .stApp div:not(button *):not([data-testid="stAlert"] *):not([aria-selected="true"] *),
+    .stApp li:not(button *),
+    .stApp td,
+    .stApp th {
         color: #202923;
     }
 
@@ -262,29 +267,217 @@ st.markdown(
         font-size: 12.5px !important;
     }
 
-    /* Buttons */
-    div.stButton > button, .stForm button, div.stLinkButton > a, div.stDownloadButton > button {
-        background-color: #183B2A !important;
-        color: #FFFFFF !important;
-        border: 1px solid #183B2A !important;
-        font-family: 'Inter', sans-serif !important;
+    /* ==========================================================================
+       BUTTON SYSTEM (Strict High-Contrast Guarantee)
+       ========================================================================== */
+    
+    /* Base resets for all button elements */
+    button,
+    div.stButton > button,
+    .stForm button,
+    div.stLinkButton > a,
+    div.stDownloadButton > button {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         font-weight: 600 !important;
-        font-size: 13px !important;
+        font-size: 13.5px !important;
+        line-height: 1.4 !important;
         border-radius: 6px !important;
-        padding: 8px 16px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-        transition: background-color 0.15s ease, border-color 0.15s ease !important;
+        padding: 8px 18px !important;
+        min-height: 38px !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease-in-out !important;
+        text-decoration: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
-    div.stButton > button:hover, div.stLinkButton > a:hover, div.stDownloadButton > button:hover {
+
+    /* PRIMARY BUTTONS: Forest Green (#183B2A) background with crisp White (#FFFFFF) text */
+    div.stButton > button[kind="primary"],
+    div.stButton > button[data-testid="baseButton-primary"],
+    button[data-testid="baseButton-primary"],
+    button[kind="primary"],
+    .stForm button {
+        background-color: #183B2A !important;
+        border: 1px solid #183B2A !important;
+        box-shadow: 0 1px 2px rgba(24, 59, 42, 0.12) !important;
+    }
+    div.stButton > button[kind="primary"] *,
+    div.stButton > button[kind="primary"] p,
+    div.stButton > button[kind="primary"] span,
+    div.stButton > button[kind="primary"] div,
+    div.stButton > button[data-testid="baseButton-primary"] *,
+    div.stButton > button[data-testid="baseButton-primary"] p,
+    div.stButton > button[data-testid="baseButton-primary"] span,
+    div.stButton > button[data-testid="baseButton-primary"] div,
+    button[data-testid="baseButton-primary"] *,
+    button[data-testid="baseButton-primary"] p,
+    button[data-testid="baseButton-primary"] span,
+    button[data-testid="baseButton-primary"] div,
+    button[kind="primary"] *,
+    button[kind="primary"] p,
+    button[kind="primary"] span,
+    button[kind="primary"] div,
+    .stForm button *,
+    .stForm button p,
+    .stForm button span,
+    .stForm button div {
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.01em !important;
+    }
+
+    /* Primary Button Hover */
+    div.stButton > button[kind="primary"]:hover,
+    div.stButton > button[data-testid="baseButton-primary"]:hover,
+    button[data-testid="baseButton-primary"]:hover,
+    button[kind="primary"]:hover,
+    .stForm button:hover {
         background-color: #28543A !important;
         border-color: #28543A !important;
-        color: #FFFFFF !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.06) !important;
+        box-shadow: 0 2px 6px rgba(24, 59, 42, 0.22) !important;
     }
-    div.stButton > button[kind="primary"], button[data-testid="baseButton-primary"] {
-        background-color: #183B2A !important;
+    div.stButton > button[kind="primary"]:hover *,
+    div.stButton > button[data-testid="baseButton-primary"]:hover *,
+    button[data-testid="baseButton-primary"]:hover *,
+    button[kind="primary"]:hover *,
+    .stForm button:hover * {
         color: #FFFFFF !important;
-        border: 1px solid #183B2A !important;
+    }
+
+    /* Primary Button Active & Focus */
+    div.stButton > button[kind="primary"]:active,
+    button[data-testid="baseButton-primary"]:active,
+    .stForm button:active {
+        background-color: #132E21 !important;
+        border-color: #132E21 !important;
+        transform: translateY(1px) !important;
+    }
+    div.stButton > button[kind="primary"]:focus-visible,
+    button[data-testid="baseButton-primary"]:focus-visible {
+        outline: 2px solid #28543A !important;
+        outline-offset: 2px !important;
+    }
+
+    /* SECONDARY BUTTONS: Surface White (#FFFFFF) / Sage with Dark Forest (#183B2A) text */
+    div.stButton > button[kind="secondary"],
+    div.stButton > button[data-testid="baseButton-secondary"],
+    div.stButton > button:not([kind="primary"]):not([data-testid="baseButton-primary"]),
+    button[data-testid="baseButton-secondary"],
+    button[kind="secondary"],
+    div.stDownloadButton > button,
+    div.stLinkButton > a {
+        background-color: #FFFFFF !important;
+        border: 1px solid #C3D5BF !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+    }
+    div.stButton > button[kind="secondary"] *,
+    div.stButton > button[kind="secondary"] p,
+    div.stButton > button[kind="secondary"] span,
+    div.stButton > button[kind="secondary"] div,
+    div.stButton > button[data-testid="baseButton-secondary"] *,
+    div.stButton > button[data-testid="baseButton-secondary"] p,
+    div.stButton > button[data-testid="baseButton-secondary"] span,
+    div.stButton > button[data-testid="baseButton-secondary"] div,
+    div.stButton > button:not([kind="primary"]):not([data-testid="baseButton-primary"]) *,
+    div.stButton > button:not([kind="primary"]):not([data-testid="baseButton-primary"]) p,
+    div.stButton > button:not([kind="primary"]):not([data-testid="baseButton-primary"]) span,
+    div.stButton > button:not([kind="primary"]):not([data-testid="baseButton-primary"]) div,
+    button[data-testid="baseButton-secondary"] *,
+    button[data-testid="baseButton-secondary"] p,
+    button[data-testid="baseButton-secondary"] span,
+    button[data-testid="baseButton-secondary"] div,
+    button[kind="secondary"] *,
+    button[kind="secondary"] p,
+    button[kind="secondary"] span,
+    button[kind="secondary"] div,
+    div.stDownloadButton > button *,
+    div.stDownloadButton > button p,
+    div.stDownloadButton > button span,
+    div.stDownloadButton > button div,
+    div.stLinkButton > a *,
+    div.stLinkButton > a p,
+    div.stLinkButton > a span,
+    div.stLinkButton > a div {
+        color: #183B2A !important;
+        font-weight: 600 !important;
+    }
+
+    /* Secondary Button Hover */
+    div.stButton > button[kind="secondary"]:hover,
+    div.stButton > button[data-testid="baseButton-secondary"]:hover,
+    div.stButton > button:not([kind="primary"]):not([data-testid="baseButton-primary"]):hover,
+    button[data-testid="baseButton-secondary"]:hover,
+    button[kind="secondary"]:hover,
+    div.stDownloadButton > button:hover,
+    div.stLinkButton > a:hover {
+        background-color: #E7EDE4 !important;
+        border-color: #183B2A !important;
+        box-shadow: 0 2px 4px rgba(24, 59, 42, 0.08) !important;
+    }
+    div.stButton > button[kind="secondary"]:hover *,
+    div.stButton > button[data-testid="baseButton-secondary"]:hover *,
+    div.stButton > button:not([kind="primary"]):not([data-testid="baseButton-primary"]):hover *,
+    button[data-testid="baseButton-secondary"]:hover *,
+    button[kind="secondary"]:hover *,
+    div.stDownloadButton > button:hover *,
+    div.stLinkButton > a:hover * {
+        color: #183B2A !important;
+    }
+
+    /* Secondary Button Active & Focus */
+    div.stButton > button[kind="secondary"]:active,
+    div.stButton > button:not([kind="primary"]):active,
+    button[data-testid="baseButton-secondary"]:active {
+        background-color: #D9E4D5 !important;
+        border-color: #183B2A !important;
+        transform: translateY(1px) !important;
+    }
+    div.stButton > button[kind="secondary"]:focus-visible,
+    button[data-testid="baseButton-secondary"]:focus-visible,
+    div.stLinkButton > a:focus-visible {
+        outline: 2px solid #183B2A !important;
+        outline-offset: 2px !important;
+    }
+
+    /* DESTRUCTIVE ACTIONS */
+    button.btn-destructive,
+    div.stButton > button[kind="destructive"] {
+        background-color: #B54740 !important;
+        border: 1px solid #B54740 !important;
+    }
+    button.btn-destructive *,
+    div.stButton > button[kind="destructive"] * {
+        color: #FFFFFF !important;
+    }
+    button.btn-destructive:hover,
+    div.stButton > button[kind="destructive"]:hover {
+        background-color: #933630 !important;
+        border-color: #933630 !important;
+    }
+
+    /* DISABLED BUTTONS */
+    button:disabled,
+    button[disabled],
+    button:disabled:hover,
+    button[disabled]:hover,
+    div.stButton > button:disabled,
+    div.stButton > button[disabled] {
+        background-color: #EBECE8 !important;
+        border-color: #D6D8D2 !important;
+        cursor: not-allowed !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+    button:disabled *,
+    button[disabled] *,
+    button:disabled p,
+    button[disabled] p,
+    button:disabled span,
+    button[disabled] span,
+    div.stButton > button:disabled *,
+    div.stButton > button[disabled] * {
+        color: #8A948D !important;
     }
 
     /* Input Controls */
@@ -363,26 +556,27 @@ st.markdown(
         font-size: 13.5px !important;
     }
 
-    /* Alerts (Warning, Info, Error) */
+    /* Refined Alerts System (High Contrast & Professional Hierarchy) */
     div[data-testid="stAlert"] {
-        background-color: #FFFBEB !important;
-        border: 1px solid #F59E0B !important;
-        border-left: 4px solid #D97706 !important;
         border-radius: 6px !important;
-        padding: 10px 14px !important;
+        padding: 11px 15px !important;
         margin-bottom: 14px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+        background-color: #FFFDF5 !important;
+        border: 1px solid #E8D39E !important;
+        border-left: 4px solid #996515 !important;
     }
     div[data-testid="stAlert"] p,
     div[data-testid="stAlert"] span,
     div[data-testid="stAlert"] div {
-        color: #92400E !important;
+        color: #5C3D06 !important;
         font-size: 13px !important;
-        line-height: 1.45 !important;
+        line-height: 1.5 !important;
         font-weight: 500 !important;
     }
     div[data-testid="stAlert"] svg {
-        fill: #D97706 !important;
-        color: #D97706 !important;
+        fill: #996515 !important;
+        color: #996515 !important;
     }
 
     /* Native Metric overrides */
@@ -495,6 +689,124 @@ st.markdown(
         display: inline-block;
     }
 
+    /* Volunteer Network Specific Components */
+    .volunteer-card-cat {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #68736B;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+    }
+    .volunteer-card-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: #183B2A;
+        margin: 0;
+        line-height: 1.25;
+    }
+    .volunteer-card-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #E7EDE4;
+        color: #267348;
+        border: 1px solid #C3D5BF;
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    .volunteer-card-desc {
+        font-size: 13.5px;
+        color: #3F4741;
+        line-height: 1.5;
+        margin: 8px 0 12px 0;
+    }
+    .volunteer-card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 12.5px;
+        color: #68736B;
+        margin-bottom: 12px;
+        padding-top: 10px;
+        border-top: 1px solid #F0F2EE;
+    }
+    .volunteer-card-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .volunteer-card-tag {
+        background: #F0F4EE;
+        color: #183B2A;
+        border: 1px solid #D6E2D4;
+        border-radius: 12px;
+        padding: 2px 10px;
+        font-size: 11px;
+        font-weight: 500;
+        display: inline-block;
+        margin-right: 6px;
+        margin-bottom: 6px;
+    }
+    .drive-status-scheduled {
+        background: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #FDE68A;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .drive-status-completed {
+        background: #E7EDE4;
+        color: #267348;
+        border: 1px solid #C3D5BF;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .drive-hotspot-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #FFFBEB;
+        color: #B45309;
+        border: 1px solid #FDE68A;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 11.5px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .drive-stat-pill {
+        background: #F6F6F0;
+        border: 1px solid #E2E5DE;
+        border-radius: 6px;
+        padding: 6px 12px;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+    .drive-stat-num {
+        font-size: 17px;
+        font-weight: 700;
+        color: #183B2A;
+    }
+    .drive-stat-lbl {
+        font-size: 10.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: #68736B;
+    }
+
     /* Scrollbars */
     ::-webkit-scrollbar { width: 7px; height: 7px; }
     ::-webkit-scrollbar-track { background: #F6F6F0; }
@@ -535,7 +847,7 @@ def render_splash_screen():
     _, mid_col, _ = st.columns([1, 1, 1])
     with mid_col:
         render_logo(100)
-        if st.button("Enter Platform", key="splash_enter_btn", use_container_width=True):
+        if st.button("Enter Platform", key="splash_enter_btn", type="primary", use_container_width=True):
             st.session_state.splash_done = True
             st.rerun()
     components.html(
@@ -586,7 +898,7 @@ def render_auth_page():
             pending_email = st.session_state._pending_google_email
             st.success(f"Verified via Google as {pending_email} - choose a username to finish.")
             chosen_username = st.text_input("Choose a username", key="google_username_choice")
-            if st.button("Confirm Username", key="confirm_google_username_btn", use_container_width=True):
+            if st.button("Confirm Username", key="confirm_google_username_btn", type="primary", use_container_width=True):
                 if not chosen_username.strip():
                     st.error("Please enter a username.")
                 else:
@@ -608,7 +920,7 @@ def render_auth_page():
             with login_tab:
                 login_username = st.text_input("Username", key="login_username")
                 login_password = st.text_input("Password", type="password", key="login_password")
-                if st.button("Sign In", key="login_btn", use_container_width=True):
+                if st.button("Sign In", key="login_btn", type="primary", use_container_width=True):
                     if verify_user(login_username.strip(), login_password):
                         st.session_state.current_user = login_username.strip()
                         st.rerun()
@@ -617,7 +929,7 @@ def render_auth_page():
             with signup_tab:
                 signup_username = st.text_input("Choose a username", key="signup_username")
                 signup_password = st.text_input("Choose a password", type="password", key="signup_password")
-                if st.button("Create Account", key="signup_btn", use_container_width=True):
+                if st.button("Create Account", key="signup_btn", type="primary", use_container_width=True):
                     if not signup_username.strip() or not signup_password:
                         st.error("Username and password are both required.")
                     else:
@@ -785,11 +1097,434 @@ def init_db():
             except (TypeError, ValueError):
                 pass  # genuinely unparseable - leave it, it'll just sort a bit oddly
 
+    # --- Volunteer Network tables ---
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS volunteer_groups (
+            id               INTEGER PRIMARY KEY AUTOINCREMENT,
+            name             TEXT    NOT NULL,
+            category         TEXT    NOT NULL,
+            description      TEXT,
+            city             TEXT    NOT NULL,
+            areas_served     TEXT,
+            focus_areas      TEXT,
+            contact_email    TEXT,
+            contact_phone    TEXT,
+            leader_username  TEXT    NOT NULL,
+            member_count     INTEGER DEFAULT 1,
+            is_verified      INTEGER DEFAULT 0,
+            created_at       TEXT    NOT NULL
+        )
+        """
+    )
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS volunteer_memberships (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            group_id   INTEGER NOT NULL,
+            username   TEXT    NOT NULL,
+            joined_at  TEXT    NOT NULL,
+            UNIQUE(group_id, username),
+            FOREIGN KEY (group_id) REFERENCES volunteer_groups (id)
+        )
+        """
+    )
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS cleanup_drives (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            group_id            INTEGER,
+            hotspot_report_id   INTEGER,
+            title               TEXT    NOT NULL,
+            location_name       TEXT    NOT NULL,
+            target_date         TEXT    NOT NULL,
+            target_time         TEXT    NOT NULL,
+            description         TEXT,
+            required_volunteers INTEGER DEFAULT 10,
+            status              TEXT    DEFAULT 'Scheduled',
+            created_by          TEXT    NOT NULL,
+            created_at          TEXT    NOT NULL,
+            fixed_photo_path    TEXT,
+            bags_cleared        INTEGER DEFAULT 0,
+            FOREIGN KEY (group_id) REFERENCES volunteer_groups (id),
+            FOREIGN KEY (hotspot_report_id) REFERENCES garbage_reports (id)
+        )
+        """
+    )
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS drive_rsvps (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            drive_id  INTEGER NOT NULL,
+            username  TEXT    NOT NULL,
+            timestamp TEXT    NOT NULL,
+            UNIQUE(drive_id, username),
+            FOREIGN KEY (drive_id) REFERENCES cleanup_drives (id)
+        )
+        """
+    )
+
+    # Seed Default Authentic Chennai Volunteer Organizations if empty
+    cursor.execute("SELECT COUNT(*) FROM volunteer_groups")
+    if cursor.fetchone()[0] == 0:
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        seed_groups = [
+            (
+                "NSS Anna University Environmental Cell",
+                "University / NSS Cell",
+                "Student-led collegiate conservation wing mobilizing engineering cohorts for urban canal audits, park reclamation, and campus zero-waste stewardship.",
+                "Chennai",
+                "Guindy, Adyar, Kotturpuram, Velachery",
+                "Illegal Dumping, Overflowing Bins, Campus Perimeters",
+                "nss.enviro@annauniv.edu",
+                "+91 94440 12890",
+                "shakthivel",
+                128,
+                1,
+                now_str,
+            ),
+            (
+                "Namma Chennai Clean Squad",
+                "Youth Cleanup Squad",
+                "Decentralized youth volunteering guild targeting high-density transit junctions, pedestrian subways, and beach blackspots with weekly community sweeps.",
+                "Chennai",
+                "Marina Beach, Mylapore, Royapettah, Foreshore Estate",
+                "Beach & Waterways, Bulk Waste, Plastic Debris",
+                "action@nammachennaiclean.org",
+                "+91 98401 55210",
+                "sailesh",
+                84,
+                1,
+                now_str,
+            ),
+            (
+                "T. Nagar Green Resident Welfare Association",
+                "Resident Welfare Association (RWA)",
+                "Proactive neighbourhood citizen committee coordinating with GCC conservancy inspectors to enforce door-to-door source segregation and rapid spot remediation.",
+                "Chennai",
+                "T. Nagar, West Mambalam, Panagal Park",
+                "Commercial Waste, Overflowing Bins, Construction Debris",
+                "tnagar.rwa.civic@gmail.com",
+                "+91 98842 33100",
+                "rakesh",
+                45,
+                1,
+                now_str,
+            ),
+            (
+                "Exnora International Coastal Action Wing",
+                "NGO / Non-Profit",
+                "Veteran civic society organization operating community compost centers, mangrove cleanup brigades, and hazardous waste containerization across Chennai's coastal belt.",
+                "Chennai",
+                "Thiruvanmiyur, ECR, Besant Nagar, Ennore",
+                "Hazardous / Medical Waste, Coastal Dumps, Plastic Waste",
+                "volunteer@exnoracoastal.in",
+                "+91 94441 99400",
+                "thishanth",
+                210,
+                1,
+                now_str,
+            ),
+        ]
+        cursor.executemany(
+            """
+            INSERT INTO volunteer_groups (
+                name, category, description, city, areas_served, focus_areas,
+                contact_email, contact_phone, leader_username, member_count, is_verified, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            seed_groups,
+        )
+
+        seed_drives = [
+            (
+                2,
+                None,
+                "Marina Coastal Fringe & Promenade Deep Cleanup",
+                "Marina Beach Promenade (Behind Light House)",
+                "2026-11-21",
+                "06:30 AM",
+                "Targeting microplastics, styrofoam packing waste, and tourist debris along the high-tide line before morning crowds arrive. Gloves, waste gunny bags, and safety hand sanitizers provided.",
+                35,
+                "Scheduled",
+                "sailesh",
+                now_str,
+            ),
+            (
+                3,
+                None,
+                "South Usman Road Commercial Corridor Night Audit & Clearance",
+                "Under Usman Road Flyover, T. Nagar",
+                "2026-11-22",
+                "07:00 AM",
+                "Remediation of unattended packing crates, wet organic carton accumulations, and vendor waste overflowing near storm-water drains.",
+                20,
+                "Scheduled",
+                "rakesh",
+                now_str,
+            ),
+        ]
+        cursor.executemany(
+            """
+            INSERT INTO cleanup_drives (
+                group_id, hotspot_report_id, title, location_name, target_date, target_time,
+                description, required_volunteers, status, created_by, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            seed_drives,
+        )
     conn.commit()
     conn.close()
 
 
 init_db()
+
+
+# --------------------------------------------------------------------------
+# VOLUNTEER NETWORK BACKEND LAYER
+# --------------------------------------------------------------------------
+def fetch_volunteer_groups(city_filter=None, category_filter=None, search_term=None):
+    """Fetches registered volunteer organizations with optional filtering."""
+    conn = get_connection()
+    query = "SELECT * FROM volunteer_groups WHERE 1=1"
+    params = []
+    if city_filter and city_filter != "All Cities":
+        query += " AND city = ?"
+        params.append(city_filter)
+    if category_filter and category_filter != "All Categories":
+        query += " AND category = ?"
+        params.append(category_filter)
+    if search_term and search_term.strip():
+        term = f"%{search_term.strip().lower()}%"
+        query += " AND (LOWER(name) LIKE ? OR LOWER(areas_served) LIKE ? OR LOWER(focus_areas) LIKE ? OR LOWER(description) LIKE ?)"
+        params.extend([term, term, term, term])
+    query += " ORDER BY is_verified DESC, member_count DESC, id ASC"
+    df = pd.read_sql_query(query, conn, params=params)
+    conn.close()
+    return df
+
+
+def fetch_volunteer_group_by_id(group_id):
+    """Returns a single volunteer group row as a dict or None."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM volunteer_groups WHERE id = ?", (group_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return None
+    cols = [col[0] for col in cursor.description]
+    conn.close()
+    return dict(zip(cols, row))
+
+
+def create_volunteer_group(name, category, description, city, areas_served, focus_areas, contact_email, contact_phone, leader_username):
+    """Registers a new volunteer group and adds the creator as leader and first member."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute(
+        """
+        INSERT INTO volunteer_groups (
+            name, category, description, city, areas_served, focus_areas,
+            contact_email, contact_phone, leader_username, member_count, is_verified, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?)
+        """,
+        (name, category, description, city, areas_served, focus_areas, contact_email, contact_phone, leader_username, now_str),
+    )
+    group_id = cursor.lastrowid
+    cursor.execute(
+        "INSERT INTO volunteer_memberships (group_id, username, joined_at) VALUES (?, ?, ?)",
+        (group_id, leader_username, now_str),
+    )
+    conn.commit()
+    conn.close()
+    return group_id
+
+
+def is_user_group_member(group_id, username):
+    """Checks if a user is an active member of a volunteer group."""
+    if not username:
+        return False
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT 1 FROM volunteer_memberships WHERE group_id = ? AND username = ?", (group_id, username))
+    row = cursor.fetchone()
+    conn.close()
+    return row is not None
+
+
+def join_volunteer_group(group_id, username):
+    """Adds a user to a volunteer group and increments member_count."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        cursor.execute(
+            "INSERT INTO volunteer_memberships (group_id, username, joined_at) VALUES (?, ?, ?)",
+            (group_id, username, now_str),
+        )
+        cursor.execute("UPDATE volunteer_groups SET member_count = member_count + 1 WHERE id = ?", (group_id,))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
+
+def leave_volunteer_group(group_id, username):
+    """Removes a user from a volunteer group and decrements member_count."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM volunteer_memberships WHERE group_id = ? AND username = ?", (group_id, username))
+    if cursor.rowcount > 0:
+        cursor.execute("UPDATE volunteer_groups SET member_count = MAX(0, member_count - 1) WHERE id = ?", (group_id,))
+        conn.commit()
+        conn.close()
+        return True
+    conn.close()
+    return False
+
+
+def fetch_cleanup_drives(status_filter="All", group_id=None, hotspot_id=None):
+    """Fetches cleanup drives joined with group name and RSVP count."""
+    conn = get_connection()
+    query = """
+        SELECT d.*, g.name AS group_name, g.category AS group_category,
+               COALESCE(r.rsvp_count, 0) AS current_rsvps
+        FROM cleanup_drives d
+        LEFT JOIN volunteer_groups g ON d.group_id = g.id
+        LEFT JOIN (
+            SELECT drive_id, COUNT(*) AS rsvp_count
+            FROM drive_rsvps
+            GROUP BY drive_id
+        ) r ON d.id = r.drive_id
+        WHERE 1=1
+    """
+    params = []
+    if status_filter and status_filter != "All":
+        query += " AND d.status = ?"
+        params.append(status_filter)
+    if group_id:
+        query += " AND d.group_id = ?"
+        params.append(group_id)
+    if hotspot_id:
+        query += " AND d.hotspot_report_id = ?"
+        params.append(hotspot_id)
+    query += " ORDER BY CASE WHEN d.status = 'Scheduled' THEN 0 WHEN d.status = 'In Progress' THEN 1 ELSE 2 END, d.target_date ASC, d.id DESC"
+    df = pd.read_sql_query(query, conn, params=params)
+    conn.close()
+    return df
+
+
+def create_cleanup_drive(group_id, hotspot_report_id, title, location_name, target_date, target_time, description, required_volunteers, created_by):
+    """Creates a new cleanup drive and automatically registers the organizer as first RSVP."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute(
+        """
+        INSERT INTO cleanup_drives (
+            group_id, hotspot_report_id, title, location_name, target_date, target_time,
+            description, required_volunteers, status, created_by, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Scheduled', ?, ?)
+        """,
+        (group_id, hotspot_report_id, title, location_name, target_date, target_time, description, required_volunteers, created_by, now_str),
+    )
+    drive_id = cursor.lastrowid
+    cursor.execute(
+        "INSERT INTO drive_rsvps (drive_id, username, timestamp) VALUES (?, ?, ?)",
+        (drive_id, created_by, now_str),
+    )
+    conn.commit()
+    conn.close()
+    return drive_id
+
+
+def is_user_drive_rsvpd(drive_id, username):
+    """Checks if a user has RSVP'd to a cleanup drive."""
+    if not username:
+        return False
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT 1 FROM drive_rsvps WHERE drive_id = ? AND username = ?", (drive_id, username))
+    row = cursor.fetchone()
+    conn.close()
+    return row is not None
+
+
+def rsvp_cleanup_drive(drive_id, username):
+    """Registers an RSVP for a volunteer on a cleanup drive."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        cursor.execute(
+            "INSERT INTO drive_rsvps (drive_id, username, timestamp) VALUES (?, ?, ?)",
+            (drive_id, username, now_str),
+        )
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
+
+def cancel_rsvp_cleanup_drive(drive_id, username):
+    """Cancels an RSVP for a cleanup drive."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM drive_rsvps WHERE drive_id = ? AND username = ?", (drive_id, username))
+    conn.commit()
+    conn.close()
+
+
+def complete_cleanup_drive(drive_id, fixed_photo_path, bags_cleared, completed_by):
+    """
+    Marks a cleanup drive as Completed, updates verified photo & bags collected,
+    marks any linked hotspot as Fixed/Cleaned in garbage_reports,
+    and awards civic points (+50 to drive organizer, +25 to all RSVP'd volunteers).
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT hotspot_report_id, created_by FROM cleanup_drives WHERE id = ?", (drive_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return False
+    hotspot_id, creator = row[0], row[1]
+
+    cursor.execute(
+        """
+        UPDATE cleanup_drives
+        SET status = 'Completed', fixed_photo_path = ?, bags_cleared = ?
+        WHERE id = ?
+        """,
+        (fixed_photo_path, bags_cleared, drive_id),
+    )
+
+    if hotspot_id:
+        cursor.execute(
+            "UPDATE garbage_reports SET status = 'Fixed', rating = 5, fixed_photo_path = ? WHERE id = ?",
+            (fixed_photo_path, hotspot_id),
+        )
+
+    if creator:
+        cursor.execute("UPDATE users SET civic_score = civic_score + 50 WHERE username = ?", (creator,))
+
+    cursor.execute("SELECT username FROM drive_rsvps WHERE drive_id = ? AND username != ?", (drive_id, creator or ""))
+    participants = [r[0] for r in cursor.fetchall()]
+    for p in participants:
+        cursor.execute("UPDATE users SET civic_score = civic_score + 25 WHERE username = ?", (p,))
+
+    conn.commit()
+    conn.close()
+    return True
 
 
 # --------------------------------------------------------------------------
@@ -1851,10 +2586,11 @@ if not GOOGLE_MAPS_API_KEY:
         "Google Maps JavaScript API key not detected. Set the GOOGLE_MAPS_API_KEY environment variable to view interactive satellite maps and municipal heatmaps. Coordinate targeting and offline incident logging remain operational."
     )
 
-tab_overview, tab_map, tab_reviews, tab_news, tab_sentinel = st.tabs([
+tab_overview, tab_map, tab_reviews, tab_volunteer, tab_news, tab_sentinel = st.tabs([
     "Overview",
     "Geospatial Operations",
     "Community & Grievance SLA",
+    "Volunteer Network",
     "Sanitation News",
     "IoT Edge Sentinel",
 ])
@@ -2119,6 +2855,64 @@ with tab_reviews:
                         button_label = "Open GCC Complaint Portal ↗" if is_known_portal else "Search Local Municipal Portal ↗"
                         st.link_button(button_label, municipality_info["url"])
 
+                # Community Volunteer Remediation Mobilization
+                if row["status"] == "Open":
+                    with st.expander("🤝 Mobilize Volunteer Community Cleanup"):
+                        st.markdown(f"**Mobilize community action for Hotspot `{ticket_id}`**")
+                        st.caption("Coordinate local volunteer intervention with registered NGOs, student NSS cells, or citizen squads.")
+                        linked_drives = fetch_cleanup_drives(hotspot_id=review_id)
+                        if not linked_drives.empty:
+                            st.markdown(f"**Scheduled Cleanup Drives for this Spot ({len(linked_drives)}):**")
+                            for _, drow in linked_drives.iterrows():
+                                st.info(
+                                    f"🗓️ **{drow['title']}** — Scheduled on {drow['target_date']} at {drow['target_time']}\n\n"
+                                    f"Host: {drow['group_name'] or 'Independent Squad'} · RSVPs: {drow['current_rsvps']} / {drow['required_volunteers']} volunteers"
+                                )
+                        else:
+                            st.caption("No volunteer drives scheduled for this spot yet.")
+
+                        if st.session_state.current_user is None:
+                            st.caption("Sign in to organize a volunteer cleanup drive for this hotspot.")
+                        else:
+                            with st.form(f"mobilize_drive_form_{review_id}"):
+                                st.write("Schedule a New Volunteer Drive for this Spot:")
+                                m_title = st.text_input("Drive Title", value=f"Remediation: {row['location_name']}", key=f"m_title_{review_id}")
+                                m_groups = fetch_volunteer_groups()
+                                group_opts = ["Independent Community Squad"] + [f"{g['name']} (ID: {g['id']})" for _, g in m_groups.iterrows()]
+                                m_chosen_group = st.selectbox("Affiliated Organization / Group", group_opts, key=f"m_grp_{review_id}")
+                                m_col1, m_col2 = st.columns(2)
+                                with m_col1:
+                                    m_date = st.date_input("Target Date", key=f"m_date_{review_id}")
+                                with m_col2:
+                                    m_time = st.text_input("Target Time", value="07:00 AM", key=f"m_time_{review_id}")
+                                m_vols = st.number_input("Target Volunteer Headcount", min_value=5, max_value=200, value=15, step=5, key=f"m_vols_{review_id}")
+                                m_desc = st.text_area("Assembly Instructions & Safety Details", value=f"Meeting at {row['location_name']} to remediate {row['category'].lower()} accumulations. Gloves and disposal gunny sacks provided.", key=f"m_desc_{review_id}")
+                                m_submit = st.form_submit_button("Launch Volunteer Cleanup Drive")
+                                if m_submit:
+                                    if not m_title.strip():
+                                        st.error("Drive title is required.")
+                                    else:
+                                        sel_group_id = None
+                                        if m_chosen_group != "Independent Community Squad":
+                                            try:
+                                                sel_group_id = int(m_chosen_group.split("ID: ")[1].rstrip(")"))
+                                            except Exception:
+                                                sel_group_id = None
+                                        create_cleanup_drive(
+                                            group_id=sel_group_id,
+                                            hotspot_report_id=review_id,
+                                            title=m_title.strip(),
+                                            location_name=row["location_name"],
+                                            target_date=str(m_date),
+                                            target_time=m_time.strip(),
+                                            description=m_desc.strip(),
+                                            required_volunteers=int(m_vols),
+                                            created_by=st.session_state.current_user,
+                                        )
+                                        add_civic_points(st.session_state.current_user, 10)
+                                        st.success("Cleanup Drive launched! (+10 Civic Points). View in Volunteer Network tab.")
+                                        st.rerun()
+
                 col_up, _ = st.columns([1, 5])
                 with col_up:
                     if st.session_state.current_user is None:
@@ -2148,7 +2942,7 @@ with tab_reviews:
                         else:
                             fixed_photo = st.file_uploader("Upload clean-up photo", type=["jpg", "jpeg", "png"], key=f"fixed_photo_upload_{review_id}")
                         new_rating = st.slider("Verified cleanliness rating", 1, 5, 5, key=f"fixed_rating_{review_id}")
-                        if st.button("Confirm Cleaned", key=f"confirm_fixed_{review_id}"):
+                        if st.button("Confirm Cleaned", key=f"confirm_fixed_{review_id}", type="primary"):
                             fixed_path = save_photo(fixed_photo.getvalue(), f"fixed_{review_id}") if fixed_photo else None
                             mark_review_fixed(review_id, new_rating, fixed_path)
                             add_civic_points(st.session_state.current_user, 15)
@@ -2187,13 +2981,308 @@ with tab_reviews:
                             else:
                                 st.warning("Reply cannot be empty.")
 
-# ----- TAB 4: SANITATION NEWS ----------------------------------------------
+# ----- TAB 4: VOLUNTEER NETWORK --------------------------------------------
+with tab_volunteer:
+    st.markdown(
+        """
+        <div class="editorial-hero">
+            <div class="editorial-tag">CIVIC ACTION & VOLUNTEER RESPONSE NETWORK</div>
+            <h2 class="editorial-title">Community Cleanup Squads & NGO Remediation Guilds</h2>
+            <p class="editorial-desc">Bridging municipal capacity constraints by connecting unresolved civic waste hotspots with registered environmental NGOs, collegiate NSS units, resident welfare associations, and grassroots community cleanup squads.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Network Metrics
+    all_v_groups = fetch_volunteer_groups()
+    all_v_drives = fetch_cleanup_drives()
+    total_groups = len(all_v_groups)
+    total_volunteers = int(all_v_groups["member_count"].sum()) if not all_v_groups.empty else 0
+    active_drives = len(all_v_drives[all_v_drives["status"] == "Scheduled"]) if not all_v_drives.empty else 0
+    total_bags_cleared = int(all_v_drives["bags_cleared"].sum()) if not all_v_drives.empty else 0
+
+    st.markdown(
+        f"""
+        <div class="kpi-row">
+            <div class="kpi-tile">
+                <div class="kpi-tile-label">Registered Guilds</div>
+                <div class="kpi-tile-val">{total_groups}</div>
+                <div class="kpi-tile-sub">NGOs, NSS cells & RWAs</div>
+            </div>
+            <div class="kpi-tile">
+                <div class="kpi-tile-label">Active Volunteers</div>
+                <div class="kpi-tile-val accent">{total_volunteers}</div>
+                <div class="kpi-tile-sub">Enrolled community force</div>
+            </div>
+            <div class="kpi-tile">
+                <div class="kpi-tile-label">Scheduled Drives</div>
+                <div class="kpi-tile-val warning">{active_drives}</div>
+                <div class="kpi-tile-sub">Action events pending</div>
+            </div>
+            <div class="kpi-tile">
+                <div class="kpi-tile-label">Waste Remediated</div>
+                <div class="kpi-tile-val success">{total_bags_cleared} Bags</div>
+                <div class="kpi-tile-sub">Cleared from hotspots</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    vol_tab_orgs, vol_tab_drives, vol_tab_register = st.tabs([
+        "Organization Directory",
+        "Active Cleanup Drives",
+        "Register a Volunteer Group",
+    ])
+
+    with vol_tab_orgs:
+        col_s1, col_s2, col_s3 = st.columns([2, 1.5, 1.5])
+        with col_s1:
+            search_grp = st.text_input("Search Organizations", placeholder="Filter by name, locality, or keyword...", key="vol_search_input")
+        with col_s2:
+            cat_filter = st.selectbox(
+                "Category",
+                ["All Categories", "University / NSS Cell", "NGO / Non-Profit", "Youth Cleanup Squad", "Resident Welfare Association (RWA)", "Corporate CSR"],
+                key="vol_cat_select",
+            )
+        with col_s3:
+            city_filter = st.selectbox(
+                "Operating City",
+                ["All Cities", "Chennai", "Coimbatore", "Madurai", "Trichy", "Salem"],
+                key="vol_city_select",
+            )
+
+        groups_df = fetch_volunteer_groups(
+            city_filter=city_filter,
+            category_filter=cat_filter,
+            search_term=search_grp,
+        )
+
+        if groups_df.empty:
+            st.info("No volunteer organizations matching the selected filters found. Be the first to register one!")
+        else:
+            st.caption(f"Showing {len(groups_df)} registered volunteer organizations.")
+            for _, grp in groups_df.iterrows():
+                grp_id = int(grp["id"])
+                is_member = is_user_group_member(grp_id, st.session_state.current_user) if st.session_state.current_user else False
+                verified_badge = '<span class="volunteer-card-badge">✓ Verified Partner</span>' if grp["is_verified"] else ""
+
+                focus_tags = [f.strip() for f in (grp["focus_areas"] or "").split(",") if f.strip()]
+                tags_html = "".join([f'<span class="volunteer-card-tag">{t}</span>' for t in focus_tags])
+
+                with st.container(border=True):
+                    c_info, c_action = st.columns([3.2, 1])
+                    with c_info:
+                        st.markdown(
+                            f"""
+                            <div class="volunteer-card-cat">{grp['category']} · {grp['city']}</div>
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                                <h3 class="volunteer-card-title">{grp['name']}</h3>
+                                {verified_badge}
+                            </div>
+                            <div class="volunteer-card-desc">{safe_str(grp['description'], 'No description provided.')}</div>
+                            <div style="margin-bottom:8px;">{tags_html}</div>
+                            <div class="volunteer-card-meta">
+                                <div class="volunteer-card-meta-item">📍 <b>Coverage:</b> {safe_str(grp['areas_served'], grp['city'])}</div>
+                                <div class="volunteer-card-meta-item">👥 <b>Members:</b> {grp['member_count']}</div>
+                                <div class="volunteer-card-meta-item">✉️ <b>Contact:</b> {safe_str(grp['contact_email'], 'N/A')}</div>
+                                <div class="volunteer-card-meta-item">📞 <b>Phone:</b> {safe_str(grp['contact_phone'], 'N/A')}</div>
+                                <div class="volunteer-card-meta-item">👤 <b>Leader:</b> @{grp['leader_username']}</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                    with c_action:
+                        st.write("")
+                        st.write("")
+                        if st.session_state.current_user is None:
+                            st.caption("Sign in to join this organization.")
+                        elif is_member:
+                            st.success("✓ Joined")
+                            if st.button("Leave Group", key=f"leave_grp_{grp_id}", type="secondary", use_container_width=True):
+                                leave_volunteer_group(grp_id, st.session_state.current_user)
+                                st.rerun()
+                        else:
+                            if st.button("Join Group", key=f"join_grp_{grp_id}", type="primary", use_container_width=True):
+                                join_volunteer_group(grp_id, st.session_state.current_user)
+                                add_civic_points(st.session_state.current_user, 5)
+                                st.rerun()
+
+    with vol_tab_drives:
+        d_col1, d_col2 = st.columns([3, 1])
+        with d_col1:
+            st.markdown("#### Scheduled Community Waste Remediation Drives")
+            st.caption("Participate in scheduled volunteer cleanups, earn civic score points, and restore degraded public spaces.")
+        with d_col2:
+            drive_status_sel = st.selectbox("Filter Status", ["All", "Scheduled", "Completed"], key="drive_status_select")
+
+        drives_df = fetch_cleanup_drives(status_filter=drive_status_sel)
+
+        if drives_df.empty:
+            st.info("No cleanup drives matching this filter. Schedule a drive from the registry or register a new one!")
+        else:
+            for _, d_row in drives_df.iterrows():
+                drive_id = int(d_row["id"])
+                is_rsvpd = is_user_drive_rsvpd(drive_id, st.session_state.current_user) if st.session_state.current_user else False
+                status_class = "drive-status-completed" if d_row["status"] == "Completed" else "drive-status-scheduled"
+                host_group = d_row["group_name"] or "Independent Community Action Squad"
+
+                with st.container(border=True):
+                    d_top_left, d_top_right = st.columns([3, 1])
+                    with d_top_left:
+                        st.markdown(
+                            f"""
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                <span class="{status_class}">{d_row['status']}</span>
+                                <span style="font-size:12px; color:#68736B; font-weight:600;">Hosted by {host_group}</span>
+                            </div>
+                            <h3 style="font-size:17px; font-weight:700; color:#183B2A; margin:0 0 6px 0;">{d_row['title']}</h3>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+
+                        if d_row["hotspot_report_id"]:
+                            hotspot_num = int(d_row["hotspot_report_id"])
+                            st.markdown(
+                                f"""
+                                <div class="drive-hotspot-link">
+                                    🎯 Linked Hotspot Ticket: <b>GR-{hotspot_num:04d}</b> ({d_row['location_name']})
+                                </div>
+                                """,
+                                unsafe_allow_html=True,
+                            )
+
+                        st.markdown(
+                            f"""
+                            <div style="font-size:13.5px; color:#3F4741; margin-bottom:12px;">{safe_str(d_row['description'], 'No details specified.')}</div>
+                            <div class="volunteer-card-meta">
+                                <div class="volunteer-card-meta-item">🗓️ <b>Date:</b> {d_row['target_date']}</div>
+                                <div class="volunteer-card-meta-item">⏰ <b>Time:</b> {d_row['target_time']}</div>
+                                <div class="volunteer-card-meta-item">📍 <b>Meeting Spot:</b> {d_row['location_name']}</div>
+                                <div class="volunteer-card-meta-item">👤 <b>Organizer:</b> @{d_row['created_by']}</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+
+                    with d_top_right:
+                        req_vols = max(1, int(d_row["required_volunteers"]))
+                        cur_vols = int(d_row["current_rsvps"])
+                        pct = min(1.0, cur_vols / req_vols)
+
+                        st.markdown(
+                            f"""
+                            <div class="drive-stat-pill">
+                                <div class="drive-stat-num">{cur_vols} / {req_vols}</div>
+                                <div class="drive-stat-lbl">Volunteers RSVP'd</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                        st.progress(pct)
+
+                        if d_row["status"] == "Scheduled":
+                            if st.session_state.current_user is None:
+                                st.caption("Sign in to RSVP.")
+                            elif is_rsvpd:
+                                st.success("✓ You are RSVP'd")
+                                if st.button("Cancel RSVP", key=f"cancel_rsvp_{drive_id}", type="secondary", use_container_width=True):
+                                    cancel_rsvp_cleanup_drive(drive_id, st.session_state.current_user)
+                                    st.rerun()
+                            else:
+                                if st.button("RSVP to Participate", key=f"rsvp_{drive_id}", type="primary", use_container_width=True):
+                                    rsvp_cleanup_drive(drive_id, st.session_state.current_user)
+                                    add_civic_points(st.session_state.current_user, 5)
+                                    st.rerun()
+                        elif d_row["status"] == "Completed":
+                            st.markdown(
+                                f"""
+                                <div style="background:#E7EDE4; color:#267348; border:1px solid #C3D5BF; border-radius:6px; padding:6px 10px; font-size:12px; font-weight:700; text-align:center; margin-top:8px;">
+                                    ✓ Remediated: {d_row['bags_cleared']} Bags
+                                </div>
+                                """,
+                                unsafe_allow_html=True,
+                            )
+
+                    if d_row["status"] == "Scheduled" and st.session_state.current_user is not None:
+                        with st.expander("📸 Mark Drive Completed & Verify Remediation"):
+                            st.caption("Upload after-action proof of cleaned area and record the volume of waste bags collected to grant civic score rewards.")
+                            comp_photo = st.file_uploader("Upload Verification Photo", type=["jpg", "jpeg", "png"], key=f"drive_comp_photo_{drive_id}")
+                            comp_bags = st.number_input("Number of Waste Bags Remediated", min_value=1, max_value=500, value=10, step=1, key=f"drive_comp_bags_{drive_id}")
+
+                            if st.button("Confirm Resolution & Award Civic Points", key=f"btn_comp_drive_{drive_id}", type="primary"):
+                                comp_path = None
+                                if comp_photo:
+                                    comp_path = save_photo(comp_photo.getvalue(), f"drive_{drive_id}")
+                                complete_cleanup_drive(drive_id, comp_path, int(comp_bags), st.session_state.current_user)
+                                st.success("Drive marked Completed! +50 points awarded to organizer, +25 points to all RSVP'd volunteers.")
+                                st.rerun()
+
+                    elif d_row["status"] == "Completed" and d_row["fixed_photo_path"]:
+                        st.caption("Remediation Proof Photograph:")
+                        safe_image(d_row["fixed_photo_path"], caption=f"Cleared: {d_row['bags_cleared']} bags removed", width=260)
+
+    with vol_tab_register:
+        st.markdown("#### Register a Volunteer Organization or Squad")
+        st.caption("Establish a collegiate environmental NSS cell, registered NGO profile, Resident Welfare Association (RWA) clean squad, or youth civic action group.")
+
+        if st.session_state.current_user is None:
+            st.warning("Please sign in or create an account to register a volunteer organization.")
+        else:
+            with st.form("register_volunteer_group_form"):
+                col_g1, col_g2 = st.columns(2)
+                with col_g1:
+                    reg_name = st.text_input("Organization / Group Name*", placeholder="e.g. Loyola NSS Eco-Brigade")
+                    reg_cat = st.selectbox(
+                        "Category*",
+                        ["University / NSS Cell", "NGO / Non-Profit", "Youth Cleanup Squad", "Resident Welfare Association (RWA)", "Corporate CSR"],
+                    )
+                    reg_city = st.text_input("Operating City / District*", value="Chennai")
+                    reg_areas = st.text_input("Served Localities / Pincodes*", placeholder="e.g. Nungambakkam, Chetpet, Kodambakkam")
+                with col_g2:
+                    reg_focus = st.multiselect(
+                        "Primary Focus Areas*",
+                        ["Illegal Dumping", "Overflowing Bins", "Plastic & Microplastics", "Coastal & Waterways", "Construction Debris", "Bulk Waste", "Hazardous / Medical Waste"],
+                        default=["Illegal Dumping", "Overflowing Bins"],
+                    )
+                    reg_email = st.text_input("Coordinator Email*", placeholder="contact@ecobrigade.org")
+                    reg_phone = st.text_input("Coordinator Phone*", placeholder="+91 98400 00000")
+
+                reg_desc = st.text_area(
+                    "Mission & Description*",
+                    placeholder="Describe your organization's background, volunteer membership, regular clean-up schedules, and target areas...",
+                )
+
+                reg_submit = st.form_submit_button("Register Organization")
+                if reg_submit:
+                    if not reg_name.strip() or not reg_city.strip() or not reg_desc.strip():
+                        st.error("Please fill in all required fields (Name, City, and Mission Description).")
+                    else:
+                        focus_str = ", ".join(reg_focus) if reg_focus else "General Sanitation"
+                        new_gid = create_volunteer_group(
+                            name=reg_name.strip(),
+                            category=reg_cat,
+                            description=reg_desc.strip(),
+                            city=reg_city.strip(),
+                            areas_served=reg_areas.strip(),
+                            focus_areas=focus_str,
+                            contact_email=reg_email.strip(),
+                            contact_phone=reg_phone.strip(),
+                            leader_username=st.session_state.current_user,
+                        )
+                        add_civic_points(st.session_state.current_user, 20)
+                        st.success(f"Successfully registered '{reg_name.strip()}'! (+20 Civic Points). You are registered as the founding group leader.")
+                        st.rerun()
+
+
+# ----- TAB 5: SANITATION NEWS ----------------------------------------------
 with tab_news:
     st.markdown("### Environmental & Sanitation Dispatch")
     st.caption("Public coverage on municipal waste management, illegal dumping, and civic public health via Google News RSS.")
 
     news_query = st.text_input("Search topic", value="Chennai garbage dumping OR waste management", key="news_search_query")
-    if st.button("Fetch Latest Coverage"):
+    if st.button("Fetch Latest Coverage", type="primary"):
         fetched = fetch_news_rss(news_query.strip())
         if fetched:
             store_news_items(fetched, news_query.strip())
@@ -2253,7 +3342,7 @@ with tab_news:
                 st.session_state.news_page += 1
                 st.rerun()
 
-# ----- TAB 5: IOT EDGE SENTINEL CONSOLE ------------------------------------
+# ----- TAB 6: IOT EDGE SENTINEL CONSOLE ------------------------------------
 with tab_sentinel:
     st.markdown("### IoT Edge Sentinel Console · Node CLEANSPOT-CAM-01")
     st.caption("Autonomous blind-spot optical surveillance node, hardware spotlight, and automated municipal grievance triage.")
