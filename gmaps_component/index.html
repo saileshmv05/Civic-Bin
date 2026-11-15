@@ -11,15 +11,18 @@
     display: flex; gap: 6px;
   }
   #draw-controls button {
-    font-family: sans-serif; font-size: 13px; padding: 6px 10px;
-    border-radius: 6px; border: 1px solid #999; cursor: pointer;
-    background: #fff; color: #222;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 600; padding: 8px 14px;
+    border-radius: 8px; border: 1px solid rgba(49, 92, 59, 0.3); cursor: pointer;
+    background: #FFFFFF; color: #14251B; box-shadow: 0 4px 12px rgba(20, 37, 27, 0.15);
+    transition: all 0.2s ease;
   }
-  #draw-controls button.active { background: #e23636; color: #fff; border-color: #e23636; }
+  #draw-controls button:hover { background: #F5F4ED; border-color: #315C3B; }
+  #draw-controls button.active { background: #14251B; color: #C7E66A; border-color: #14251B; box-shadow: 0 4px 14px rgba(20, 37, 27, 0.3); }
   #draw-hint {
-    position: absolute; top: 46px; right: 10px; z-index: 5;
-    background: rgba(0,0,0,0.75); color: #fff; font-family: sans-serif;
-    font-size: 12px; padding: 4px 8px; border-radius: 6px; display: none;
+    position: absolute; top: 52px; right: 10px; z-index: 5;
+    background: #14251B; color: #F5F4ED; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 8px; display: none;
+    box-shadow: 0 6px 18px rgba(20, 37, 27, 0.25); border: 1px solid rgba(199, 230, 106, 0.3);
   }
 </style>
 </head>

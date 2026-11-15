@@ -174,14 +174,19 @@ GOOGLE_OAUTH_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID", "")
 GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", "")
 GOOGLE_OAUTH_REDIRECT_URI = os.environ.get("GOOGLE_OAUTH_REDIRECT_URI", "http://localhost:8501")
 
-st.set_page_config(page_title="Clean Spot", layout="wide")
+st.set_page_config(
+    page_title="Civic-Bin | Autonomous Environmental Sanitation & Grievance Intelligence",
+    page_icon="🌿",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
-# Clean Spot logo: a vector mark drawn in code (no image file needed).
-CLEAN_SPOT_MARK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" ><defs><linearGradient id="cb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00f0ff"/><stop offset="1" stop-color="#2ee6a6"/></linearGradient></defs><circle cx="100" cy="100" r="84" fill="none" stroke="url(#cb)" stroke-width="6" stroke-linecap="round" stroke-dasharray="330 198" transform="rotate(-100 100 100)"/><g fill="none" stroke="url(#cb)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M76 96 L82 150 Q83 156 90 156 L110 156 Q117 156 118 150 L124 96"/><path d="M66 96 H134"/><path d="M89 96 V88 Q89 85 92 85 H108 Q111 85 111 88 V96"/><path d="M100 140 V108"/><path d="M90 117 L100 107 L110 117"/></g></svg>'
+# Clean Spot / Civic-Bin logo: biophilic vector mark drawn in pure SVG.
+CLEAN_SPOT_MARK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="cbGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#315C3B"/><stop offset="100%" stop-color="#C7E66A"/></linearGradient><linearGradient id="shieldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#14251B"/><stop offset="100%" stop-color="#1E3827"/></linearGradient></defs><circle cx="100" cy="100" r="88" fill="none" stroke="#315C3B" stroke-width="2.5" stroke-dasharray="6 5" opacity="0.45"/><circle cx="100" cy="100" r="80" fill="url(#shieldGrad)" stroke="url(#cbGrad)" stroke-width="3.5"/><g fill="none" stroke="#F5F4ED" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><path d="M72 84 L78 142 Q79 150 88 150 L112 150 Q121 150 122 142 L128 84"/><path d="M62 84 H138"/><path d="M86 84 V76 Q86 71 90 71 H110 Q114 71 114 76 V84"/></g><path d="M100 134 V104" stroke="#C7E66A" stroke-width="4.5" stroke-linecap="round"/><path d="M92 114 L100 102 L108 114" stroke="#C7E66A" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="100" cy="94" r="3.5" fill="#C7E66A"/></svg>'
 
 
 def render_logo(width, container=st):
-    """Shows the Clean Spot mark, centred, on a transparent background."""
+    """Shows the Civic-Bin mark, centred, on a transparent background."""
     container.markdown(
         f'<div style="display:flex;justify-content:center;margin:4px 0 12px 0;">'
         f'<div style="width:{width}px;height:{width}px;">{CLEAN_SPOT_MARK_SVG}</div></div>',
@@ -193,226 +198,283 @@ render_logo(120, st.sidebar)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # --------------------------------------------------------------------------
-# THEME - "Neon Grid" cyberpunk HUD look: dark space background, animated
-# scan-grid, glassmorphic panels, neon cyan/magenta/violet glow. Pure CSS
-# (Google Fonts + hand-rolled gradients/keyframes) - no copyrighted art.
+# THEME - Biophilic Nature-Tech Design System (Verdea, Mossa, Donezo)
+# Colors: Forest Deep #14251B, Primary Green #315C3B, Sage #A7B99A, Lime #C7E66A
+# Warm off-white background #F5F4ED with crisp surface cards #FFFFFF.
 # --------------------------------------------------------------------------
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
 
     :root {
-        --neon-cyan: #00f0ff;
-        --neon-magenta: #ff2bd6;
-        --neon-violet: #7b2ff7;
-        --neon-amber: #ffb347;
-        --glass-bg: rgba(10, 14, 30, 0.55);
-        --glass-border: rgba(0, 240, 255, 0.35);
-        --grid-line: rgba(0, 240, 255, 0.07);
+        --forest-deep: #14251B;
+        --green-primary: #315C3B;
+        --green-sage: #A7B99A;
+        --lime-muted: #C7E66A;
+        --off-white: #F5F4ED;
+        --surface-white: #FFFFFF;
+        --charcoal: #242923;
+        --text-secondary: #777D73;
+        --border-subtle: rgba(49, 92, 59, 0.16);
+        --border-light: rgba(20, 37, 27, 0.08);
+        --card-shadow: 0 4px 20px rgba(20, 37, 27, 0.04), 0 1px 3px rgba(20, 37, 27, 0.02);
+        --card-shadow-hover: 0 10px 28px rgba(20, 37, 27, 0.08), 0 2px 6px rgba(20, 37, 27, 0.04);
+        --alert-red: #DC2626;
+        --warning-amber: #D97706;
     }
 
-    @keyframes gridDrift {
-        0%   { background-position: 0 0, 0 0; }
-        100% { background-position: 80px 80px, -80px 80px; }
+    @keyframes fadeUp {
+        0%   { opacity: 0; transform: translateY(14px); }
+        100% { opacity: 1; transform: translateY(0); }
     }
-    @keyframes glowPulse {
-        0%, 100% { opacity: 0.55; }
-        50%      { opacity: 1; }
-    }
-    @keyframes neonText {
-        0%, 100% { filter: drop-shadow(0 0 6px rgba(0,240,255,0.75)) drop-shadow(0 0 18px rgba(123,47,247,0.45)); }
-        50%      { filter: drop-shadow(0 0 12px rgba(255,43,214,0.85)) drop-shadow(0 0 26px rgba(0,240,255,0.55)); }
-    }
-    @keyframes ringPulse {
+    @keyframes pulseRing {
         0%   { transform: scale(0.7); opacity: 0.9; }
-        80%  { transform: scale(1.9); opacity: 0; }
-        100% { transform: scale(1.9); opacity: 0; }
+        80%  { transform: scale(1.8); opacity: 0; }
+        100% { transform: scale(1.8); opacity: 0; }
     }
     @keyframes barFill {
         0%   { width: 4%; }
         100% { width: 100%; }
     }
-    @keyframes fadeUp {
-        0%   { opacity: 0; transform: translateY(14px); }
-        100% { opacity: 1; transform: translateY(0); }
+
+    html, body, [class*="css"], .stApp {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+        background-color: var(--off-white) !important;
+        color: var(--charcoal) !important;
     }
 
-    html, body, [class*="css"] { font-family: 'Rajdhani', sans-serif !important; }
-
-    .stApp {
-        background:
-            linear-gradient(rgba(0,240,255,0.05) 1px, transparent 1px) 0 0 / 80px 80px,
-            linear-gradient(90deg, rgba(0,240,255,0.05) 1px, transparent 1px) 0 0 / 80px 80px,
-            radial-gradient(circle at 20% 0%, rgba(123,47,247,0.18) 0%, transparent 45%),
-            radial-gradient(circle at 85% 15%, rgba(0,240,255,0.14) 0%, transparent 40%),
-            radial-gradient(circle at 50% 100%, rgba(255,43,214,0.10) 0%, transparent 45%),
-            #04050d;
-        animation: gridDrift 14s linear infinite;
+    /* Headings */
+    h1, h2, h3, .brand-display {
+        font-family: 'Syne', 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 700 !important;
+        color: var(--forest-deep) !important;
+        letter-spacing: -0.02em !important;
     }
 
-    h1, h2, h3 {
-        font-family: 'Orbitron', sans-serif !important;
-        letter-spacing: 1.5px;
-        color: #eafcff !important;
-        text-shadow: 0 0 10px rgba(0,240,255,0.55), 0 0 22px rgba(123,47,247,0.35) !important;
-    }
-
+    /* Sidebar Styling */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, rgba(6,8,20,0.96) 0%, rgba(10,6,24,0.96) 100%);
-        border-right: 1px solid var(--glass-border);
-        box-shadow: 4px 0 24px rgba(0,240,255,0.08);
+        background-color: #FFFFFF !important;
+        border-right: 1px solid rgba(49, 92, 59, 0.12) !important;
+        box-shadow: 2px 0 16px rgba(20, 37, 27, 0.03) !important;
     }
     section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3 {
         font-size: 1.05rem !important;
+        color: var(--forest-deep) !important;
     }
 
-    /* Buttons - neon gradient with glow */
+    /* Buttons */
     div.stButton > button, .stForm button, div.stLinkButton > a, div.stDownloadButton > button {
-        background: linear-gradient(120deg, var(--neon-violet) 0%, var(--neon-cyan) 55%, var(--neon-magenta) 100%) !important;
-        background-size: 200% 200% !important;
-        color: #04050d !important;
-        border: none !important;
-        font-family: 'Orbitron', sans-serif !important;
-        font-weight: 700 !important;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        font-size: 12.5px !important;
+        background-color: var(--forest-deep) !important;
+        color: #FFFFFF !important;
+        border: 1px solid var(--forest-deep) !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 13.5px !important;
+        letter-spacing: 0.01em;
         border-radius: 10px !important;
-        box-shadow: 0 0 14px rgba(0,240,255,0.45), 0 0 30px rgba(123,47,247,0.25);
-        transition: all 0.2s ease-in-out;
+        padding: 8px 18px !important;
+        box-shadow: 0 2px 8px rgba(20, 37, 27, 0.08) !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
     div.stButton > button:hover, div.stLinkButton > a:hover, div.stDownloadButton > button:hover {
-        background-position: 100% 50% !important;
-        box-shadow: 0 0 22px rgba(0,240,255,0.75), 0 0 46px rgba(255,43,214,0.45);
-        transform: translateY(-1px);
-        color: #04050d !important;
+        background-color: var(--green-primary) !important;
+        border-color: var(--green-primary) !important;
+        color: var(--lime-muted) !important;
+        box-shadow: 0 4px 14px rgba(49, 92, 59, 0.22) !important;
+        transform: translateY(-1px) !important;
     }
 
-    /* Text inputs / selects / textareas - dark glass with neon focus */
+    /* Primary Accent Button */
+    div.stButton > button[kind="primary"], button[data-testid="baseButton-primary"] {
+        background: linear-gradient(135deg, #14251B 0%, #315C3B 100%) !important;
+        color: var(--lime-muted) !important;
+        border: 1px solid rgba(199, 230, 106, 0.35) !important;
+        box-shadow: 0 4px 16px rgba(20, 37, 27, 0.18) !important;
+    }
+
+    /* Inputs, Selects, Textareas */
     div[data-baseweb="input"], div[data-baseweb="base-input"], div[data-baseweb="select"] > div,
     div[data-baseweb="textarea"], textarea, .stTextInput input, .stNumberInput input {
-        background-color: rgba(8, 10, 24, 0.75) !important;
-        border: 1px solid rgba(0,240,255,0.28) !important;
-        color: #eafcff !important;
-        border-radius: 8px !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #D6DED1 !important;
+        color: var(--charcoal) !important;
+        border-radius: 9px !important;
+        font-size: 13.5px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
     }
     div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within,
     div[data-baseweb="textarea"]:focus-within {
-        border-color: var(--neon-cyan) !important;
-        box-shadow: 0 0 10px rgba(0,240,255,0.55) !important;
+        border-color: var(--green-primary) !important;
+        box-shadow: 0 0 0 3px rgba(49, 92, 59, 0.12) !important;
     }
 
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        border-bottom: 1px solid rgba(49, 92, 59, 0.14) !important;
+        padding-bottom: 2px;
+        margin-bottom: 24px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        color: var(--text-secondary) !important;
+        border-radius: 8px 8px 0 0 !important;
+        padding: 10px 18px !important;
+        border: none !important;
+        background: transparent !important;
+        transition: all 0.2s ease !important;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        color: var(--forest-deep) !important;
+        background: rgba(167, 185, 154, 0.15) !important;
+    }
+    .stTabs [aria-selected="true"] {
+        color: var(--forest-deep) !important;
+        background: #FFFFFF !important;
+        border-bottom: 3px solid var(--green-primary) !important;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.02) !important;
+    }
+
+    /* Streamlit Containers & Cards */
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        background: #FFFFFF !important;
+        border: 1px solid rgba(49, 92, 59, 0.14) !important;
+        border-radius: 14px !important;
+        box-shadow: 0 4px 18px rgba(20, 37, 27, 0.04) !important;
+        padding: 18px 20px !important;
+    }
+    div[data-testid="stExpander"] {
+        border: 1px solid rgba(49, 92, 59, 0.14) !important;
+        border-radius: 12px !important;
+        background: #FFFFFF !important;
+        box-shadow: 0 2px 12px rgba(20, 37, 27, 0.03) !important;
+    }
+
+    /* Metrics */
+    div[data-testid="stMetricValue"] {
+        color: var(--forest-deep) !important;
+        font-family: 'Syne', 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 700 !important;
+    }
+    div[data-testid="stMetricLabel"] {
+        color: var(--text-secondary) !important;
+        font-weight: 600 !important;
+        font-size: 0.82rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
+    }
+
+    /* Custom Badges & Telemetry Panels */
+    .eco-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #E8F0E6;
+        color: #23542C;
+        border: 1px solid #C5DBC0;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 11.5px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+    .eco-pill.dark {
+        background: rgba(199, 230, 106, 0.14);
+        color: #C7E66A;
+        border: 1px solid rgba(199, 230, 106, 0.3);
+    }
+    .status-open {
+        display: inline-block;
+        background: #FDF2F2;
+        color: #9B1C1C;
+        border: 1px solid #F8B4B4;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .status-fixed {
+        display: inline-block;
+        background: #EBF5EC;
+        color: #1F6830;
+        border: 1px solid #C3E6C7;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
     .hero-banner {
-        background: linear-gradient(120deg, rgba(123,47,247,0.22) 0%, rgba(4,5,13,0.4) 70%);
-        border: 1px solid var(--glass-border);
+        background: linear-gradient(135deg, #14251B 0%, #1D3625 60%, #14251B 100%);
+        border: 1px solid rgba(167, 185, 154, 0.25);
         border-radius: 18px;
-        backdrop-filter: blur(10px);
-        padding: 22px 28px;
-        margin: -16px -16px 22px -16px;
+        padding: 32px 36px;
+        margin: -10px -10px 24px -10px;
+        color: #F5F4ED;
+        box-shadow: 0 10px 32px rgba(20, 37, 27, 0.15);
         position: relative;
         overflow: hidden;
         animation: fadeUp 0.6s ease-out;
     }
-    .hero-banner::before {
-        content: "";
-        position: absolute; inset: 0;
-        background: linear-gradient(90deg, transparent, rgba(0,240,255,0.5), transparent);
-        height: 2px; top: 0; left: -100%;
-        animation: scanLine 3.5s linear infinite;
-    }
-    @keyframes scanLine { 0% { left: -100%; } 100% { left: 100%; } }
-    .hero-banner .eyebrow {
-        font-family: 'Share Tech Mono', monospace;
-        letter-spacing: 3px;
-        color: var(--neon-cyan);
-        font-size: 12px;
-        text-transform: uppercase;
+    .hero-banner .hero-eyebrow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+        gap: 8px;
     }
     .hero-banner h1 {
-        margin: 6px 0 8px 0 !important;
+        font-family: 'Syne', sans-serif !important;
         font-size: 2.5rem !important;
-        background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta) 60%, var(--neon-violet));
-        -webkit-background-clip: text; background-clip: text; color: transparent !important;
-        text-shadow: none !important;
-        animation: neonText 3.5s ease-in-out infinite;
+        font-weight: 800 !important;
+        color: #FFFFFF !important;
+        margin: 0 0 10px 0 !important;
+        letter-spacing: -0.03em !important;
     }
     .hero-banner p {
-        color: #cfe8ff;
+        color: #D3DFCE;
         margin: 0;
-        max-width: 640px;
-        font-size: 1.02rem;
+        max-width: 720px;
+        font-size: 1.05rem;
+        line-height: 1.55;
     }
-    .pulse-badge {
-        position: absolute;
-        top: 22px;
-        right: 28px;
-        background: rgba(0,240,255,0.08);
-        color: var(--neon-cyan);
-        border: 1px solid var(--neon-cyan);
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 12px;
-        letter-spacing: 1.5px;
-        padding: 6px 14px;
-        border-radius: 999px;
-        box-shadow: 0 0 12px rgba(0,240,255,0.45);
-        animation: glowPulse 2s ease-in-out infinite;
-    }
-    .pulse-badge::before {
-        content: "●"; margin-right: 6px; color: #4dffb8;
-    }
-
     .hero-card {
-        background: var(--glass-bg);
-        backdrop-filter: blur(8px);
-        border: 1px solid var(--glass-border);
+        background: #FFFFFF;
+        border: 1px solid rgba(49, 92, 59, 0.14);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        color: var(--charcoal);
+        box-shadow: 0 2px 10px rgba(20, 37, 27, 0.04);
+    }
+    .hero-card b { color: var(--forest-deep); }
+
+    .eco-card {
+        background: #FFFFFF;
+        border: 1px solid rgba(49, 92, 59, 0.14);
         border-radius: 14px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-        color: #eafcff;
-        box-shadow: 0 0 16px rgba(0,240,255,0.12);
+        padding: 18px 20px;
+        box-shadow: 0 4px 18px rgba(20, 37, 27, 0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .hero-card b { color: var(--neon-cyan); }
-
-    .stTabs [data-baseweb="tab-list"] { gap: 6px; }
-    .stTabs [data-baseweb="tab"] {
-        font-family: 'Orbitron', sans-serif !important;
-        font-size: 13px;
-        letter-spacing: 1px;
-        color: #9fb4d8 !important;
-        border-radius: 10px 10px 0 0 !important;
+    .eco-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(20, 37, 27, 0.07);
     }
-    .stTabs [aria-selected="true"] {
-        color: var(--neon-cyan) !important;
-        border-bottom: 2px solid var(--neon-cyan) !important;
-        text-shadow: 0 0 8px rgba(0,240,255,0.65);
+    .eco-card-dark {
+        background: #14251B;
+        border: 1px solid rgba(167, 185, 154, 0.25);
+        border-radius: 14px;
+        padding: 20px 22px;
+        color: #F5F4ED;
+        box-shadow: 0 8px 24px rgba(20, 37, 27, 0.15);
     }
 
-    div[data-testid="stExpander"] {
-        border: 1px solid var(--glass-border) !important;
-        border-radius: 12px !important;
-        background: rgba(8,10,24,0.4) !important;
-        backdrop-filter: blur(6px);
-    }
-
-    div[data-testid="stMetricValue"] {
-        color: var(--neon-magenta) !important;
-        font-family: 'Orbitron', sans-serif !important;
-        text-shadow: 0 0 10px rgba(255,43,214,0.5);
-    }
-
-    div[data-testid="stContainer"], div[data-testid="stVerticalBlockBorderWrapper"] {
-        border-radius: 14px !important;
-    }
-
-    ::-webkit-scrollbar { width: 10px; height: 10px; }
-    ::-webkit-scrollbar-track { background: #04050d; }
-    ::-webkit-scrollbar-thumb {
-        background: linear-gradient(var(--neon-cyan), var(--neon-violet));
-        border-radius: 6px;
-    }
-
-    /* ---- Splash screen ---- */
+    /* Splash Screen */
     .splash-wrap {
         min-height: 78vh;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -421,93 +483,83 @@ st.markdown(
     }
     .splash-core {
         position: relative;
-        width: 160px; height: 160px;
+        width: 150px; height: 150px;
         display: flex; align-items: center; justify-content: center;
-        margin-bottom: 18px;
+        margin-bottom: 20px;
     }
     .splash-ring {
         position: absolute; inset: 0;
-        border: 2px solid var(--neon-cyan);
+        border: 2px solid var(--green-primary);
         border-radius: 50%;
-        animation: ringPulse 2.4s ease-out infinite;
+        animation: pulseRing 2.4s ease-out infinite;
     }
-    .splash-ring.ring2 { border-color: var(--neon-magenta); animation-delay: 0.8s; }
-    .splash-ring.ring3 { border-color: var(--neon-violet); animation-delay: 1.6s; }
-    .splash-logo {
-        font-size: 56px;
-        filter: drop-shadow(0 0 14px rgba(0,240,255,0.85));
-        animation: glowPulse 2s ease-in-out infinite;
-    }
+    .splash-ring.ring2 { border-color: var(--lime-muted); animation-delay: 0.8s; }
+    .splash-ring.ring3 { border-color: var(--green-sage); animation-delay: 1.6s; }
     .splash-title {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 3rem;
-        font-weight: 900;
-        letter-spacing: 6px;
-        color: #eafcff;
-        animation: neonText 3s ease-in-out infinite;
+        font-family: 'Syne', sans-serif;
+        font-size: 3.2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #FFFFFF;
     }
-    .splash-title span { color: var(--neon-magenta); }
+    .splash-title span { color: var(--lime-muted); }
     .splash-sub {
-        font-family: 'Share Tech Mono', monospace;
-        color: var(--neon-cyan);
-        letter-spacing: 3px;
-        font-size: 13px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #D3DFCE;
+        font-size: 14px;
+        font-weight: 500;
         margin-top: 6px;
         margin-bottom: 26px;
     }
     .splash-bar {
         width: 320px; max-width: 70vw; height: 6px;
-        background: rgba(0,240,255,0.12);
+        background: rgba(255, 255, 255, 0.12);
         border-radius: 4px;
         overflow: hidden;
-        border: 1px solid rgba(0,240,255,0.35);
-        margin-bottom: 10px;
+        border: 1px solid rgba(199, 230, 106, 0.3);
+        margin-bottom: 12px;
     }
     .splash-bar-fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--neon-violet), var(--neon-cyan), var(--neon-magenta));
+        background: linear-gradient(90deg, var(--green-primary), var(--lime-muted));
         animation: barFill 2.6s ease-in-out forwards;
-        box-shadow: 0 0 10px rgba(0,240,255,0.8);
     }
     .splash-status {
-        font-family: 'Share Tech Mono', monospace;
-        color: #7fa8c9;
+        font-family: 'Space Grotesk', monospace;
+        color: #A7B99A;
         font-size: 12px;
-        letter-spacing: 1.5px;
-        margin-bottom: 22px;
+        letter-spacing: 0.05em;
+        margin-bottom: 24px;
     }
 
-    /* ---- Auth page ---- */
+    /* Auth Page */
     .auth-card {
-        background: var(--glass-bg);
-        backdrop-filter: blur(14px);
-        border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        padding: 26px 30px 6px 30px;
+        background: #FFFFFF;
+        border: 1px solid rgba(49, 92, 59, 0.14);
+        border-radius: 18px;
+        padding: 28px 32px 10px 32px;
         text-align: center;
-        margin-bottom: 6px;
-        box-shadow: 0 0 30px rgba(0,240,255,0.12);
+        margin-bottom: 8px;
+        box-shadow: 0 8px 30px rgba(20, 37, 27, 0.06);
         animation: fadeUp 0.6s ease-out;
     }
-    .auth-eyebrow {
-        font-family: 'Share Tech Mono', monospace;
-        color: var(--neon-cyan);
-        letter-spacing: 3px;
-        font-size: 12px;
-        margin-bottom: 6px;
-    }
     .auth-title {
-        font-size: 1.8rem !important;
+        font-size: 1.85rem !important;
         margin: 4px 0 8px 0 !important;
-        background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
-        -webkit-background-clip: text; background-clip: text; color: transparent !important;
-        text-shadow: none !important;
+        color: var(--forest-deep) !important;
+        font-family: 'Syne', sans-serif !important;
     }
-    .auth-sub { color: #b9cfe8; font-size: 0.92rem; margin-bottom: 4px; }
+    .auth-sub { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 6px; }
     .auth-divider {
-        text-align: center; color: #6d84a8; font-family: 'Share Tech Mono', monospace;
-        font-size: 11px; letter-spacing: 2px; margin: 14px 0 10px 0; text-transform: uppercase;
+        text-align: center; color: var(--text-secondary); font-family: 'Space Grotesk', monospace;
+        font-size: 11px; letter-spacing: 2px; margin: 16px 0 12px 0; text-transform: uppercase;
     }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #EDECE4; }
+    ::-webkit-scrollbar-thumb { background: #A7B99A; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #315C3B; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -523,26 +575,17 @@ geo_component = components.declare_component("geo_component", path=_geo_componen
 
 
 # --------------------------------------------------------------------------
-# SPLASH SCREEN + ACCESS TERMINAL (auth page) - both take over the full
-# viewport (sidebar/header hidden) and are called with st.stop() right
-# after, so nothing below them renders until the user has passed through.
-# Functions live here (near the theme); they're invoked later in the
-# script, after the DB/auth helpers they depend on are defined - Python
-# resolves those names at call time, so definition order doesn't matter,
-# only that the *call* comes after the helpers are defined.
+# SPLASH SCREEN + ACCESS TERMINAL (auth page)
 # --------------------------------------------------------------------------
 def render_splash_screen():
     """
-    Full-screen animated boot sequence. Auto-advances to the access
-    terminal (render_auth_page) after ~2.6s via a tiny injected script
-    that clicks the (styled-to-match) "Enter Clean Spot" button - clicking it
-    manually works identically and immediately. Purely cosmetic/UX; no
-    data is gated behind the splash itself.
+    Biophilic animated boot sequence. Auto-advances to the access terminal.
     """
     st.markdown(
         """
         <style>
         section[data-testid="stSidebar"], header[data-testid="stHeader"] { display: none !important; }
+        .stApp { background-color: #14251B !important; }
         </style>
         <div class="splash-wrap">
             <div class="splash-core">
@@ -550,23 +593,21 @@ def render_splash_screen():
                 <div class="splash-ring ring2"></div>
                 <div class="splash-ring ring3"></div>
             </div>
-            <div class="splash-title">CLEAN<span>SPOT</span></div>
-            <div class="splash-sub">Community Cleanup and Reporting</div>
+            <div class="eco-pill dark" style="margin-bottom: 12px;">● Autonomous Civic Technology</div>
+            <div class="splash-title">CIVIC<span>BIN</span></div>
+            <div class="splash-sub">Intelligent Environmental Sanitation & Autonomous Edge Surveillance</div>
             <div class="splash-bar"><div class="splash-bar-fill"></div></div>
-            <div class="splash-status">Loading map and community data</div>
+            <div class="splash-status">Synchronizing geospatial index & IoT edge sentinel nodes...</div>
         </div>
         """,
         unsafe_allow_html=True,
     )
     _, mid_col, _ = st.columns([1, 1, 1])
     with mid_col:
-        render_logo(150)
-        if st.button("Enter Clean Spot", key="splash_enter_btn", use_container_width=True):
+        render_logo(140)
+        if st.button("Enter Civic-Bin Platform →", key="splash_enter_btn", use_container_width=True):
             st.session_state.splash_done = True
             st.rerun()
-    # Auto-advance: finds the button above by its text and clicks it once
-    # the boot animation has had time to play. Best-effort only - if the
-    # Streamlit DOM structure changes, the manual button above still works.
     components.html(
         """
         <script>
@@ -575,7 +616,7 @@ def render_splash_screen():
                 const doc = window.parent.document;
                 const buttons = doc.querySelectorAll('button');
                 for (const b of buttons) {
-                    if (b.innerText && b.innerText.includes('Enter Clean Spot')) {
+                    if (b.innerText && (b.innerText.includes('Enter Civic-Bin') || b.innerText.includes('Enter Clean Spot'))) {
                         b.click();
                         break;
                     }
@@ -590,25 +631,21 @@ def render_splash_screen():
 
 def render_auth_page():
     """
-    Full-page "access terminal" shown whenever nobody is signed in and the
-    citizen hasn't chosen to continue as a guest. Wraps the same auth
-    backend as before (local accounts + optional Google OAuth) in a
-    centered, styled page instead of tucking it into the sidebar.
-    Guest browsing is preserved as an explicit opt-out, not removed.
+    Centered access terminal for local accounts or Google OAuth.
     """
     st.markdown(
         """<style>section[data-testid="stSidebar"], header[data-testid="stHeader"] { display: none !important; }</style>""",
         unsafe_allow_html=True,
     )
-    _, mid_col, _ = st.columns([1, 1.3, 1])
+    _, mid_col, _ = st.columns([1, 1.25, 1])
     with mid_col:
-        render_logo(150)
+        render_logo(120)
         st.markdown(
             """
             <div class="auth-card">
-                <div class="auth-eyebrow">Community Cleanup and Reporting</div>
-                <h1 class="auth-title">Sign in to Clean Spot</h1>
-                <p class="auth-sub">Sign in to submit reports, vote on issues, and earn Civic Score, or continue as a guest.</p>
+                <div class="eco-pill" style="margin-bottom: 10px;">Municipal & Community Access</div>
+                <h1 class="auth-title">Sign in to Civic-Bin</h1>
+                <p class="auth-sub">Report neighbourhood waste blind spots, track 7-day clean-up SLAs, and earn community Civic Score points.</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -619,9 +656,6 @@ def render_auth_page():
             st.session_state._oauth_error = None
 
         if st.session_state.get("_pending_google_email"):
-            # First-time Google sign-in - the account doesn't exist yet, so
-            # ask for a display username before creating it. This is what
-            # keeps a citizen's username from being forced to be their gmail.
             pending_email = st.session_state._pending_google_email
             st.success(f"Verified via Google as {pending_email} - choose a username to finish.")
             chosen_username = st.text_input("Choose a username", key="google_username_choice")
@@ -639,7 +673,7 @@ def render_auth_page():
         else:
             if GOOGLE_OAUTH_CLIENT_ID:
                 st.link_button("Sign in with Google", build_google_auth_url(), use_container_width=True)
-                st.markdown('<div class="auth-divider">— or use a local account —</div>', unsafe_allow_html=True)
+                st.markdown('<div class="auth-divider">— or use credentials —</div>', unsafe_allow_html=True)
             else:
                 st.caption("Google sign-in not configured (set GOOGLE_OAUTH_CLIENT_ID/SECRET to enable it).")
 
@@ -667,13 +701,10 @@ def render_auth_page():
                         else:
                             st.error(err)
 
-            st.markdown('<div class="auth-divider">— or —</div>', unsafe_allow_html=True)
+            st.markdown('<div class="auth-divider">— or explore —</div>', unsafe_allow_html=True)
             if st.button("Continue browsing as Guest", key="guest_btn", use_container_width=True):
                 st.session_state.guest_mode = True
                 st.rerun()
-
-
-# --------------------------------------------------------------------------
 # DATABASE LAYER
 # --------------------------------------------------------------------------
 def get_connection():
@@ -1628,23 +1659,40 @@ if st.session_state.current_user is None and not st.session_state.guest_mode:
 # SIDEBAR - PROFILE
 # --------------------------------------------------------------------------
 if st.session_state.current_user is None:
-    st.sidebar.info("Browsing as Guest.")
-    if st.sidebar.button("Sign In / Sign Up"):
-        st.session_state.guest_mode = False
-        st.rerun()
-    st.sidebar.caption("Sign in to submit, upvote, reply, or mark spots cleaned.")
-else:
-    score = get_civic_score(st.session_state.current_user)
     st.sidebar.markdown(
-        f"""
-        <div class="hero-card">
-            <b>{st.session_state.current_user}</b><br>
-            Civic Score: <b>{score}</b> · {civic_badge(score)}
+        """
+        <div class="eco-card" style="padding: 14px 16px; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <b style="font-size: 14px; color: #14251B;">Guest Citizen</b>
+                <span class="eco-pill" style="background:#EDECE4; color:#5A6255; border-color:#D6DED1;">Visitor</span>
+            </div>
+            <div style="font-size: 12px; color: #777D73;">
+                Sign in to submit reports, vote on hotspots, and earn Civic Score points.
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    if st.sidebar.button("Log out"):
+    if st.sidebar.button("Sign In / Sign Up", key="sidebar_auth_btn", use_container_width=True):
+        st.session_state.guest_mode = False
+        st.rerun()
+else:
+    score = get_civic_score(st.session_state.current_user)
+    st.sidebar.markdown(
+        f"""
+        <div class="eco-card" style="padding: 14px 16px; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <b style="font-size: 15px; color: #14251B;">@{st.session_state.current_user}</b>
+                <span class="eco-pill">{civic_badge(score)}</span>
+            </div>
+            <div style="font-size: 13px; color: #777D73;">
+                Civic Score: <b style="color: #315C3B; font-size: 15px;">{score} pts</b>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.sidebar.button("Log out", key="sidebar_logout_btn", use_container_width=True):
         st.session_state.current_user = None
         st.session_state.guest_mode = False
         st.rerun()
@@ -1884,16 +1932,24 @@ else:
 
 
 # --------------------------------------------------------------------------
-# MAIN AREA - TABS
+
+# --------------------------------------------------------------------------
+# MAIN AREA - HERO & TABS
 # --------------------------------------------------------------------------
 st.markdown(
     """
     <div class="hero-banner">
-        <div class="eyebrow">Clean Spot</div>
-        <h1>Spot it. Report it. Clean it.</h1>
-        <p>Report illegal dumping and garbage in your neighbourhood. Reports are shared with the community and sent to your municipal office.
+        <div class="hero-eyebrow">
+            <span class="eco-pill dark">🌿 SMART CIVIC SANITATION INFRASTRUCTURE</span>
+            <span style="font-family: 'Space Grotesk', monospace; font-size: 11.5px; color: #C7E66A; letter-spacing: 0.08em; display: inline-flex; align-items: center; gap: 6px;">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#C7E66A; box-shadow:0 0 8px #C7E66A;"></span>
+                NODE: CLEANSPOT-CAM-01 ACTIVE
+            </span>
+        </div>
+        <h1>Spot it. Audit it. Resolve it.</h1>
+        <p>
+            Transforming urban waste blind spots into clean, accountable public spaces through community reporting, Gemini Multimodal AI vision triage, and autonomous cyber-physical edge sentinels.
         </p>
-        <div class="pulse-badge">LIVE</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -1905,7 +1961,187 @@ if not GOOGLE_MAPS_API_KEY:
         "to see the map (both the picker and heatmap views). (See the setup instructions at the top of clean_spot_app.py.)"
     )
 
-tab_map, tab_reviews, tab_news, tab_sentinel = st.tabs(["Map", "Community", "News", "🛡️ IoT Edge Sentinel"])
+tab_overview, tab_map, tab_reviews, tab_news, tab_sentinel = st.tabs([
+    "🌿 Overview",
+    "🗺️ Geospatial Operations",
+    "👥 Community & Grievance SLA",
+    "📰 Sanitation News",
+    "🛡️ IoT Edge Sentinel",
+])
+
+# ----- TAB 1: EXECUTIVE OVERVIEW & LANDING EXPERIENCE -----------------------
+with tab_overview:
+    all_reviews_ov = fetch_all_reviews()
+    total_reps = len(all_reviews_ov)
+    open_reps = (all_reviews_ov["status"] == "Open").sum() if not all_reviews_ov.empty else 0
+    fixed_reps = (all_reviews_ov["status"] == "Fixed").sum() if not all_reviews_ov.empty else 0
+    severe_open_reps = ((all_reviews_ov["rating"] <= 2) & (all_reviews_ov["status"] == "Open")).sum() if not all_reviews_ov.empty else 0
+    avg_cleanliness = f"{all_reviews_ov['rating'].mean():.1f} / 5" if not all_reviews_ov.empty else "5.0 / 5"
+    res_rate = f"{(fixed_reps / total_reps * 100):.0f}%" if total_reps > 0 else "0%"
+
+    # Top KPI metric cards
+    kpi1, kpi2, kpi3, kpi4, kpi5, kpi6 = st.columns(6)
+    with kpi1:
+        st.metric("Total Incidents", total_reps)
+    with kpi2:
+        st.metric("Open Hotspots", int(severe_open_reps))
+    with kpi3:
+        st.metric("Resolved Spots", int(fixed_reps))
+    with kpi4:
+        st.metric("Resolution Rate", res_rate)
+    with kpi5:
+        st.metric("Avg Cleanliness", avg_cleanliness)
+    with kpi6:
+        st.metric("Edge Sentinels", "1 Active")
+
+    st.markdown("---")
+
+    # Problem Statement & 4-Stage Ecosystem Visual
+    c_story, c_eco = st.columns([1.1, 1], gap="large")
+    with c_story:
+        st.markdown(
+            """
+            <div style="padding: 6px 0;">
+                <span class="eco-pill" style="margin-bottom: 12px;">The Municipal Blind-Spot Challenge</span>
+                <h2 style="font-size: 1.85rem; margin: 8px 0 14px 0; color: #14251B; line-height: 1.25;">
+                    From Unattended Waste Chaos to Science-Backed, Actionable Civic Resolution
+                </h2>
+                <p style="color: #4A5244; font-size: 1.02rem; line-height: 1.6; margin-bottom: 16px;">
+                    Traditional municipal complaint portals fail because citizens lack simple reporting tools, reports get lost in bureaucratic silos, and illegal dumping recurs in unattended neighbourhood blind spots.
+                </p>
+                <p style="color: #4A5244; font-size: 1.02rem; line-height: 1.6;">
+                    <b>Civic-Bin</b> bridges this gap with an end-to-end cyber-physical platform: deploying autonomous IoT edge sentinels for optical surveillance, multimodal Gemini AI vision for automated triage, and community-driven SLA accountability linked directly to Greater Chennai Corporation (GCC) grievance infrastructure.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            """
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                <div class="eco-card" style="flex: 1; min-width: 140px; padding: 12px 14px; text-align: center;">
+                    <div style="font-size: 1.4rem;">📸</div>
+                    <div style="font-weight: 700; color: #14251B; font-size: 13px; margin-top: 4px;">Citizen Capture</div>
+                    <div style="font-size: 11px; color: #777D73;">Mobile & Web Camera</div>
+                </div>
+                <div class="eco-card" style="flex: 1; min-width: 140px; padding: 12px 14px; text-align: center;">
+                    <div style="font-size: 1.4rem;">🧠</div>
+                    <div style="font-weight: 700; color: #14251B; font-size: 13px; margin-top: 4px;">Gemini Multimodal</div>
+                    <div style="font-size: 11px; color: #777D73;">AI Vision Classification</div>
+                </div>
+                <div class="eco-card" style="flex: 1; min-width: 140px; padding: 12px 14px; text-align: center;">
+                    <div style="font-size: 1.4rem;">🏛️</div>
+                    <div style="font-weight: 700; color: #14251B; font-size: 13px; margin-top: 4px;">Municipal Routing</div>
+                    <div style="font-size: 11px; color: #777D73;">GCC PGR Wording</div>
+                </div>
+                <div class="eco-card" style="flex: 1; min-width: 140px; padding: 12px 14px; text-align: center;">
+                    <div style="font-size: 1.4rem;">🛡️</div>
+                    <div style="font-weight: 700; color: #14251B; font-size: 13px; margin-top: 4px;">Edge Sentinel</div>
+                    <div style="font-size: 11px; color: #777D73;">ESP32-CAM 3MP Node</div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with c_eco:
+        st.markdown(
+            """
+            <div class="eco-card-dark" style="height: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <span class="eco-pill dark">CYBER-PHYSICAL ECOSYSTEM ARCHITECTURE</span>
+                    <span style="font-family: 'Space Grotesk', monospace; font-size: 11px; color: #C7E66A;">REV 1.0</span>
+                </div>
+                <h3 style="color: #FFFFFF; font-size: 1.45rem; margin: 0 0 14px 0;">4-Stage Civic Intelligence Loop</h3>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 10px; border-left: 3px solid #C7E66A;">
+                        <b style="color: #C7E66A; font-size: 13px;">1. Optical Sourcing (Human & Node):</b>
+                        <div style="color: #D3DFCE; font-size: 12px; margin-top: 2px;">
+                            Citizens photograph street waste or CLEANSPOT-CAM-01 captures frames autonomously via local Wi-Fi.
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 10px; border-left: 3px solid #A7B99A;">
+                        <b style="color: #A7B99A; font-size: 13px;">2. Multimodal AI Vision Triage:</b>
+                        <div style="color: #D3DFCE; font-size: 12px; margin-top: 2px;">
+                            Gemini Flash Vision validates waste presence, suggests category, estimates severity (1-5), and screens synthetic AI images.
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 10px; border-left: 3px solid #315C3B;">
+                        <b style="color: #C7E66A; font-size: 13px;">3. Grievance Routing & SLA Enforcement:</b>
+                        <div style="color: #D3DFCE; font-size: 12px; margin-top: 2px;">
+                            Synthesizes official 400-char Greater Chennai Corporation (GCC) complaint text and starts a 7-day clean-up countdown clock.
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 10px; border-left: 3px solid #C7E66A;">
+                        <b style="color: #A7B99A; font-size: 13px;">4. Community Verification & Civic Score:</b>
+                        <div style="color: #D3DFCE; font-size: 12px; margin-top: 2px;">
+                            Neighbours upvote reports, discuss local solutions, and submit before/after clean-up photos to earn Civic Score points.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+
+    # Category Breakdown & High-Priority Hotspots
+    col_chart, col_hotspots = st.columns([1, 1], gap="medium")
+    with col_chart:
+        st.markdown("### 📊 Real-time Incident Distribution by Category")
+        if not all_reviews_ov.empty and "category" in all_reviews_ov.columns:
+            cat_counts = all_reviews_ov["category"].value_counts().reset_index()
+            cat_counts.columns = ["Category", "Count"]
+            st.bar_chart(cat_counts.set_index("Category"), color="#315C3B")
+        else:
+            st.info("No incident records in the database yet.")
+
+    with col_hotspots:
+        st.markdown("### 🚨 High-Priority Hotspots Under SLA")
+        if not all_reviews_ov.empty:
+            severe_df = all_reviews_ov[(all_reviews_ov["rating"] <= 2) & (all_reviews_ov["status"] == "Open")]
+            if not severe_df.empty:
+                for _, s_row in severe_df.head(3).iterrows():
+                    rep_dt = datetime.strptime(s_row["timestamp"], "%Y-%m-%d %H:%M:%S")
+                    d_elapsed = (datetime.now() - rep_dt).days
+                    days_left = max(0, SLA_DAYS - d_elapsed)
+                    with st.container(border=True):
+                        st.markdown(f"**Ticket #{s_row['id']} — {s_row['category']}** · Rating: `{int(s_row['rating'])}/5`")
+                        st.caption(f"📍 {s_row['location_name']} · Reported by: **{s_row['username']}**")
+                        if d_elapsed > SLA_DAYS:
+                            st.error(f"⚠️ SLA Breached: Overdue by {d_elapsed - SLA_DAYS} day(s)")
+                        else:
+                            st.info(f"⏳ {days_left} day(s) remaining in 7-day clean-up SLA")
+            else:
+                st.success("🟢 No active severe hotspots! All severe reports have been resolved.")
+        else:
+            st.caption("No reports filed yet.")
+
+    st.markdown("---")
+
+    # Institutional Review Footer
+    st.markdown(
+        """
+        <div style="background: #FFFFFF; border: 1px solid rgba(49, 92, 59, 0.16); border-radius: 14px; padding: 22px 28px; margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                <div>
+                    <h4 style="margin: 0 0 6px 0; color: #14251B; font-family: 'Syne', sans-serif;">Civic-Bin · Design Thinking Review Project</h4>
+                    <p style="margin: 0; color: #777D73; font-size: 13px;">
+                        <b>Faculty Head:</b> Mr. Shakthivel &nbsp;|&nbsp; 
+                        <b>Development Team:</b> Sailesh M.V, Rakesh JP, Thishanth T, Tharun B
+                    </p>
+                </div>
+                <div style="font-family: 'Space Grotesk', monospace; font-size: 12px; color: #315C3B; text-align: right;">
+                    <span>GCC PGR Gateway Active</span><br>
+                    <span style="color: #777D73;">ESP32-CAM Node: 192.168.0.108</span>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # ----- TAB 1: MAP (interactive picker + heatmap, toggle between them) -------
 with tab_map:
@@ -1976,10 +2212,22 @@ with tab_map:
             "&nbsp;&nbsp; Green = 4-5 stars (Clean, incl. cleaned up)"
         )
 
-# ----- TAB 2: COMMUNITY (all reviews, upvotes, replies, fixes) -------------
+# ----- TAB 3: COMMUNITY (all reviews, upvotes, replies, fixes) -------------
 with tab_reviews:
-    st.subheader("Community")
-    st.caption("Every report, with photos, an upvote button, an SLA clock, and a reply thread.")
+    st.markdown(
+        """
+        <div style="background: #FFFFFF; border: 1px solid rgba(49, 92, 59, 0.16); border-radius: 14px; padding: 22px 28px; margin-bottom: 20px; box-shadow: 0 4px 18px rgba(20, 37, 27, 0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <span class="eco-pill" style="margin-bottom: 6px;">COMMUNITY GRIEVANCE TRACKER</span>
+                    <h2 style="font-family: 'Syne', sans-serif; color: #14251B; margin: 2px 0 4px 0;">Public Incidents & Grievance SLA</h2>
+                    <p style="color: #777D73; font-size: 13.5px; margin: 0;">Verified citizen and autonomous sentinel incident logs with photographic proof, municipal routing, and 7-day clean-up countdowns.</p>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     all_reviews = fetch_all_reviews()
 
@@ -1990,11 +2238,12 @@ with tab_reviews:
             review_id = int(row["id"])
             is_segment = isinstance(row["path_coords"], str)  # see note in reviews_to_payload re: NaN truthiness
             location_kind = "" if is_segment else ""
-            status_pill = "CLEANED" if row["status"] == "Fixed" else "OPEN"
+            status_pill = "🟢 CLEANED" if row["status"] == "Fixed" else "🔴 OPEN"
+            stars = "★" * int(row["rating"]) + "☆" * (5 - int(row["rating"]))
             ticket_id = f"GR-{review_id:04d}"
 
             with st.expander(
-                f"{ticket_id} · {location_kind} {row['location_name']} · Rating {int(row['rating'])}/5 · {status_pill}"
+                f"{ticket_id} · {status_pill} · {row['location_name']} · {stars}"
             ):
                 st.caption(f"{row['category']} · reported by **{row['username']}**")
                 st.write(safe_str(row["description"], "_No description provided._"))
@@ -2130,35 +2379,14 @@ with tab_reviews:
                             else:
                                 st.warning("Reply can't be empty.")
 
-# ----- TAB 3: News (community news feed) ----------------------------
+# ----- TAB 4: News (community news feed) ----------------------------
 with tab_news:
     st.markdown(
         """
-        <style>
-        .feed-masthead {
-            border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);
-            background: rgba(0,240,255,0.04);
-            padding: 14px 0; margin-bottom: 14px; text-align: center;
-            border-radius: 14px;
-        }
-        .feed-masthead h1 {
-            font-family: 'Orbitron', sans-serif !important;
-            font-size: 2.1rem !important; letter-spacing: 3px;
-            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
-            -webkit-background-clip: text; background-clip: text; color: transparent !important;
-            text-shadow: none !important;
-            margin: 0 !important;
-        }
-        .feed-masthead .subhead {
-            font-family: 'Share Tech Mono', monospace; color: #7fa8c9;
-            font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
-        }
-        .feed-article b { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.05rem; color: #eafcff; }
-        </style>
-        <div class="feed-masthead">
-            <div class="subhead">Local news on waste and sanitation</div>
-            <h1>News</h1>
-            <div class="subhead">Latest coverage of waste and sanitation.</div>
+        <div style="background: #FFFFFF; border: 1px solid rgba(49, 92, 59, 0.16); border-radius: 14px; padding: 24px 28px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 18px rgba(20, 37, 27, 0.04);">
+            <span class="eco-pill" style="margin-bottom: 8px;">SANITATION & ENVIRONMENTAL DISPATCH</span>
+            <h1 style="font-family: 'Syne', sans-serif; font-size: 2.2rem; color: #14251B; margin: 4px 0 6px 0; letter-spacing: -0.02em;">Civic Environmental News</h1>
+            <p style="color: #777D73; font-size: 13.5px; margin: 0; max-width: 600px; margin: auto;">Real-time coverage on solid waste management, illegal dumping blind spots, and public sanitation infrastructure powered by Google News RSS.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -2242,8 +2470,21 @@ with tab_news:
 # TAB 4: AUTONOMOUS IOT EDGE SENTINEL (CLEANSPOT-CAM-01)
 # ==============================================================================
 with tab_sentinel:
-    st.markdown("## 🛡️ CleanSpot Autonomous Edge Sentinel")
-    st.caption("Cyber-Physical Edge Vision Node · Automated Blind-Spot Surveillance, AI Audit & Autonomous Grievance Escalation")
+    st.markdown(
+        """
+        <div style="background: linear-gradient(135deg, #14251B 0%, #1D3625 100%); border: 1px solid rgba(167, 185, 154, 0.25); border-radius: 16px; padding: 24px 28px; color: #F5F4ED; margin-bottom: 22px; box-shadow: 0 8px 28px rgba(20, 37, 27, 0.14);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+                <span class="eco-pill dark">🛡️ CYBER-PHYSICAL EDGE VISION NODE</span>
+                <span style="font-family: 'Space Grotesk', monospace; font-size: 11px; color: #C7E66A;">HARDWARE: ESP32-CAM (OV3660 3MP)</span>
+            </div>
+            <h1 style="font-family: 'Syne', sans-serif; font-size: 2.2rem; color: #FFFFFF; margin: 4px 0 8px 0; letter-spacing: -0.02em;">Autonomous IoT Edge Sentinel</h1>
+            <p style="color: #D3DFCE; font-size: 14px; margin: 0; max-width: 780px;">
+                Automated blind-spot optical surveillance node with 1W hardware spotlight, edge Wi-Fi server, Gemini Multimodal AI vision triage, and direct Greater Chennai Corporation (GCC) grievance escalation.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     col_cam, col_ai = st.columns([1, 1], gap="medium")
 
